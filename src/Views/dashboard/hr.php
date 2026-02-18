@@ -8,7 +8,22 @@ $shortlistEmailOn = $emailEnabled && ($stmtS->fetchColumn() === '1');
 ?>
 <div class="mb-8 flex justify-between items-center">
     <h1>HR Dashboard</h1>
-    <a href="/?page=job_create" class="btn btn-primary">Post New Job</a>
+    <a href="<?= BASE_URL ?>/?page=job_create" class="btn btn-primary">Post New Job</a>
+</div>
+
+<div class="glass-panel mb-8" style="padding: 1rem;">
+    <form method="GET" style="display: flex; gap: 1rem; align-items: center;">
+        <input type="hidden" name="page" value="dashboard_hr">
+        <label style="font-weight: 500; color: #475569;">Filter by Position:</label>
+        <select name="job_id" onchange="this.form.submit()" style="padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 0.25rem; min-width: 250px;">
+            <option value="">All Positions</option>
+            <?php foreach ($allJobs as $job_opt): ?>
+                <option value="<?= $job_opt['id'] ?>" <?= ($filterJobId == $job_opt['id']) ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($job_opt['title']) ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+    </form>
 </div>
 
 <?php
@@ -32,7 +47,7 @@ foreach ($applications as $app) {
                     <span class="tag" style="background: #e0f2fe; color: #0284c7;"><?php echo count($apps); ?> Applicants</span>
                 </div>
                 <div style="display: flex; gap: 0.5rem;">
-                    <a href="/?action=download_all_cvs&job_title=<?php echo urlencode($jobTitle); ?>" class="btn btn-outline"
+                    <a href="<?= BASE_URL ?>/?action=download_all_cvs&job_title=<?php echo urlencode($jobTitle); ?>" class="btn btn-outline"
                         style="padding: 0.5rem 1rem; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; border-color: #cbd5e1; color: #475569;"
                         title="Download All CVs">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
@@ -43,7 +58,7 @@ foreach ($applications as $app) {
                         </svg>
                         CVs & Files
                     </a>
-                    <a href="/?action=export_csv&job_title=<?php echo urlencode($jobTitle); ?>" class="btn btn-outline"
+                    <a href="<?= BASE_URL ?>/?action=export_csv&job_title=<?php echo urlencode($jobTitle); ?>" class="btn btn-outline"
                         style="padding: 0.5rem 1rem; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; border-color: #cbd5e1; color: #475569;"
                         title="Export to Excel">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
@@ -61,6 +76,9 @@ foreach ($applications as $app) {
                     <thead>
                         <tr style="border-bottom: 1px solid var(--glass-border); text-align: left;">
                             <th style="padding: 1rem;">Applicant</th>
+                            <th style="padding: 1rem;">Gender</th>
+                            <th style="padding: 1rem;">Nationality</th>
+                            <th style="padding: 1rem;">Place of Work</th>
                             <th style="padding: 1rem;">Contact</th>
                             <th style="padding: 1rem;">CV</th>
                             <th style="padding: 1rem;">Qualifications</th>
@@ -74,16 +92,22 @@ foreach ($applications as $app) {
                                     <div style="font-weight: 600; color: #1e293b;">
                                         <?php echo htmlspecialchars($app['applicant_name']); ?>
                                     </div>
+                                    <div class="text-sm text-muted" style="margin-bottom: 0.25rem;">
+                                        <?php echo htmlspecialchars($app['applicant_title'] ?? ''); ?>
+                                    </div>
                                     <div class="text-sm text-muted"><?php echo htmlspecialchars($app['applicant_email']); ?></div>
                                 </td>
+                                <td style="padding: 1rem;"><?php echo htmlspecialchars($app['gender'] ?? '-'); ?></td>
+                                <td style="padding: 1rem;"><?php echo htmlspecialchars($app['nationality'] ?? '-'); ?></td>
+                                <td style="padding: 1rem;"><?php echo htmlspecialchars($app['place_of_work'] ?? '-'); ?></td>
                                 <td style="padding: 1rem;"><?php echo htmlspecialchars($app['phone'] ?? 'N/A'); ?></td>
                                 <td style="padding: 1rem;">
                                     <?php if (!empty($app['resume_path'])): ?>
                                         <div style="display: flex; gap: 0.5rem;">
-                                            <a href="/?action=review_cv&id=<?php echo $app['id']; ?>" target="_blank"
+                                            <a href="<?= BASE_URL ?>/?action=review_cv&id=<?php echo $app['id']; ?>" target="_blank"
                                                 class="btn btn-outline" onclick="setTimeout(() => window.location.reload(), 500)"
                                                 style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-radius: 0.25rem;">Review</a>
-                                            <a href="<?php echo $app['resume_path']; ?>" download class="btn btn-outline"
+                                            <a href="<?= BASE_URL . $app['resume_path']; ?>" download class="btn btn-outline"
                                                 title="Download"
                                                 style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-radius: 0.25rem;">
                                                 ⬇
@@ -99,7 +123,7 @@ foreach ($applications as $app) {
                                     if (!empty($qualFiles)): ?>
                                         <div style="display: flex; flex-direction: column; gap: 0.35rem;">
                                             <?php foreach ($qualFiles as $idx => $filePath): ?>
-                                                <a href="<?php echo htmlspecialchars($filePath); ?>" download class="btn btn-outline"
+                                                <a href="<?= BASE_URL . htmlspecialchars($filePath); ?>" download class="btn btn-outline"
                                                     style="padding: 0.2rem 0.5rem; font-size: 0.75rem; border-radius: 0.25rem; display: inline-flex; align-items: center; gap: 0.3rem;">
                                                     📄 File <?php echo $idx + 1; ?>
                                                 </a>
@@ -110,7 +134,7 @@ foreach ($applications as $app) {
                                     <?php endif; ?>
                                 </td>
                                 <td style="padding: 1rem;">
-                                    <form action="/" method="GET" style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <form action="<?= BASE_URL ?>/" method="GET" style="display: flex; gap: 0.5rem; align-items: center;">
                                         <input type="hidden" name="action" value="update_status">
                                         <input type="hidden" name="id" value="<?php echo $app['id']; ?>">
 

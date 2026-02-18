@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../helpers.php';
 require_once __DIR__ . '/../Models/Database.php';
 
 class AuthController
@@ -29,14 +31,14 @@ class AuthController
                     $emailService->sendVerificationEmail($email, $user['name'], $code);
 
                     $_SESSION['verify_email'] = $email;
-                    header('Location: /?page=verify_email');
+                    redirect('/?page=verify_email');
                     exit;
                 }
 
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['role'] = $user['role'];
                 $_SESSION['name'] = $user['name'];
-                header('Location: /');
+                redirect('/');
                 exit;
             } else {
                 return "Invalid credentials";
@@ -71,7 +73,7 @@ class AuthController
                     $emailService->sendVerificationEmail($email, $name, $code);
 
                     $_SESSION['verify_email'] = $email;
-                    header('Location: /?page=verify_email');
+                    redirect('/?page=verify_email');
                     exit;
                 } else {
                     return "Registration failed.";
@@ -120,7 +122,7 @@ class AuthController
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['role'] = $user['role'];
                 $_SESSION['name'] = $user['name'];
-                header('Location: /');
+                redirect('/');
                 exit;
             } else {
                 $error = "Invalid or expired verification code. Please check and try again.";
@@ -206,14 +208,14 @@ class AuthController
         $stmt = $pdo->prepare("DELETE FROM password_resets WHERE email = ?");
         $stmt->execute([$reset['email']]);
 
-        header('Location: /?page=login&msg=password_reset_success');
+        redirect('/?page=login&msg=password_reset_success');
         exit;
     }
 
     public function logout()
     {
         session_destroy();
-        header('Location: /');
+        redirect('/');
         exit;
     }
 }

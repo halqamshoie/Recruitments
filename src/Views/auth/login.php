@@ -7,7 +7,7 @@
         </div>
     <?php endif; ?>
 
-    <form method="POST" action="/?page=login">
+    <form method="POST" action="<?= BASE_URL ?>/?page=login">
         <div class="form-group">
             <label>Email Address</label>
             <input type="email" name="email" required placeholder="you@example.com">
@@ -43,14 +43,14 @@
                 <input type="checkbox" name="remember" style="width: auto; margin: 0;">
                 <span class="text-sm text-muted">Remember me</span>
             </label>
-            <a href="/?page=forgot_password" class="text-sm" style="color: var(--primary-color);">Forgot Password?</a>
+            <a href="<?= BASE_URL ?>/?page=forgot_password" class="text-sm" style="color: var(--primary-color);">Forgot Password?</a>
         </div>
 
         <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
     </form>
 
     <div class="text-center mt-6">
-        <p class="text-sm text-muted">Don't have an account? <a href="/?page=register" style="font-weight: 600;">Sign
+        <p class="text-sm text-muted">Don't have an account? <a href="<?= BASE_URL ?>/?page=register" style="font-weight: 600;">Sign
                 Up</a></p>
     </div>
 </div>

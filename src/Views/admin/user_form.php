@@ -2,11 +2,11 @@
     <h1>
         <?php echo isset($user) ? 'Edit User' : 'Create New User'; ?>
     </h1>
-    <a href="/?page=admin_users" class="btn btn-outline">Cancel</a>
+    <a href="<?= BASE_URL ?>/?page=admin_users" class="btn btn-outline">Cancel</a>
 </div>
 
 <div class="glass-panel" style="max-width: 600px; margin: 0 auto;">
-    <form action="/?action=<?php echo isset($user) ? 'update_user&id=' . $user['id'] : 'store_user'; ?>" method="POST">
+    <form action="<?= BASE_URL ?>/?action=<?php echo isset($user) ? 'update_user&id=' . $user['id'] : 'store_user'; ?>" method="POST">
         <div class="mb-4">
             <label class="form-label">Full Name</label>
             <input type="text" name="name" class="form-control"

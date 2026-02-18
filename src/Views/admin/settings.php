@@ -1,6 +1,6 @@
 <div class="mb-8 flex justify-between items-center">
     <h1>System Settings</h1>
-    <a href="/?page=admin_dashboard" class="btn btn-outline">← Back to Dashboard</a>
+    <a href="<?= BASE_URL ?>/?page=admin_dashboard" class="btn btn-outline">← Back to Dashboard</a>
 </div>
 
 <?php if (!empty($success)): ?>
@@ -16,7 +16,7 @@
         🔑 API Keys
     </h3>
 
-    <form action="/?page=admin_settings" method="POST">
+    <form action="<?= BASE_URL ?>/?page=admin_settings" method="POST">
         <input type="hidden" name="section" value="api_keys">
         <div class="form-group">
             <label>TinyMCE API Key</label>
@@ -40,7 +40,7 @@
         📧 Email Notifications
     </h3>
 
-    <form action="/?page=admin_settings" method="POST">
+    <form action="<?= BASE_URL ?>/?page=admin_settings" method="POST">
         <input type="hidden" name="section" value="email_notifications">
 
         <!-- Master Toggle -->

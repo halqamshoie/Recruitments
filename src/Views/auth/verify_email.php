@@ -22,7 +22,7 @@
         </div>
     <?php endif; ?>
 
-    <form method="POST" action="/?page=verify_email">
+    <form method="POST" action="<?= BASE_URL ?>/?page=verify_email">
         <div class="form-group" style="margin-bottom: 1.5rem;">
             <div style="display: flex; justify-content: center; gap: 0.5rem;">
                 <?php for ($i = 1; $i <= 6; $i++): ?>
@@ -45,11 +45,11 @@
 
     <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e2e8f0;">
         <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 0.5rem;">Didn't receive the code?</p>
-        <a href="/?page=resend_code" class="btn btn-outline" style="font-size: 0.9rem;">Resend Code</a>
+        <a href="<?= BASE_URL ?>/?page=resend_code" class="btn btn-outline" style="font-size: 0.9rem;">Resend Code</a>
     </div>
 
     <div style="margin-top: 1rem;">
-        <a href="/?page=register" class="text-muted" style="font-size: 0.85rem;">← Back to Register</a>
+        <a href="<?= BASE_URL ?>/?page=register" class="text-muted" style="font-size: 0.85rem;">← Back to Register</a>
     </div>
 </div>
 

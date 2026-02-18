@@ -1,10 +1,10 @@
 <div class="mb-8 flex justify-between items-center">
     <h1>Edit Job Posting</h1>
-    <a href="/?page=job_detail&id=<?php echo $job['id']; ?>" class="btn btn-outline">Cancel</a>
+    <a href="<?= BASE_URL ?>/?page=job_detail&id=<?php echo $job['id']; ?>" class="btn btn-outline">Cancel</a>
 </div>
 
 <div class="glass-panel" style="max-width: 800px; margin: 0 auto;">
-    <form action="/?page=job_edit&id=<?php echo $job['id']; ?>" method="POST">
+    <form action="<?= BASE_URL ?>/?page=job_edit&id=<?php echo $job['id']; ?>" method="POST">
         <div class="mb-4">
             <label class="form-label">Job Title</label>
             <input type="text" name="title" class="form-control"
@@ -43,13 +43,13 @@
         </div>
 
         <div class="grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-            <div class="mb-4">
+            <!-- <div class="mb-4">
                 <label class="form-label">Experience Required</label>
                 <input type="text" name="experience" class="form-control"
                     value="<?php echo htmlspecialchars($job['experience'] ?? ''); ?>" placeholder="e.g. 2-5 years">
-            </div>
+            </div> -->
             <div class="mb-4">
-                <label class="form-label">Number of Vacancies</label>
+                <label class="form-label">No. of vacancies</label>
                 <input type="number" name="vacancies" class="form-control" min="1"
                     value="<?php echo htmlspecialchars($job['vacancies'] ?? '1'); ?>">
             </div>

@@ -2,7 +2,7 @@
     <h1 class="mb-8">Post a New Job</h1>
 
     <div class="glass-panel">
-        <form action="/?page=job_create" method="POST">
+        <form action="<?= BASE_URL ?>/?page=job_create" method="POST">
             <div class="form-group">
                 <label>Job Title</label>
                 <input type="text" name="title" required placeholder="e.g. Senior Medical Researcher">
@@ -13,10 +13,10 @@
                     <label>Location</label>
                     <input type="text" name="location" placeholder="e.g. Muscat, Oman">
                 </div>
-                <div class="form-group">
-                    <label>Years of Experience</label>
-                    <input type="text" name="experience" placeholder="e.g. 5+ Years">
-                </div>
+                <!-- <div class="form-group">
+                <label>Experience</label>
+                <input type="text" name="experience" class="form-control" placeholder="e.g. 2-5 years">
+            </div> -->
             </div>
 
             <div class="grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
@@ -79,7 +79,7 @@
             </script>
 
             <div class="flex justify-between items-center" style="margin-top: 2rem;">
-                <a href="/" class="text-muted">Cancel</a>
+                <a href="<?= BASE_URL ?>/" class="text-muted">Cancel</a>
                 <div style="display: flex; gap: 1rem;">
                     <button type="submit" name="status" value="draft" class="btn btn-outline">Save as Draft</button>
                     <button type="submit" name="status" value="open" class="btn btn-primary">Post Job</button>

@@ -1,8 +1,8 @@
 <div class="mb-8 flex justify-between items-center">
     <h1>Manage Users</h1>
     <div>
-        <a href="/?page=admin_dashboard" class="btn btn-outline" style="margin-right: 0.5rem;">&larr; Dashboard</a>
-        <a href="/?page=admin_user_create" class="btn btn-primary">Add New User</a>
+        <a href="<?= BASE_URL ?>/?page=admin_dashboard" class="btn btn-outline" style="margin-right: 0.5rem;">&larr; Dashboard</a>
+        <a href="<?= BASE_URL ?>/?page=admin_user_create" class="btn btn-primary">Add New User</a>
     </div>
 </div>
 
@@ -40,10 +40,10 @@
                         <?php echo date('M j, Y', strtotime($user['created_at'])); ?>
                     </td>
                     <td style="padding: 1rem;">
-                        <a href="/?page=admin_user_edit&id=<?php echo $user['id']; ?>" class="btn btn-outline"
+                        <a href="<?= BASE_URL ?>/?page=admin_user_edit&id=<?php echo $user['id']; ?>" class="btn btn-outline"
                             style="padding: 0.25rem 0.5rem; font-size: 0.8rem; margin-right: 0.25rem;">Edit</a>
                         <?php if ($user['role'] !== 'admin' || $user['id'] !== $_SESSION['user_id']): ?>
-                            <a href="/?action=delete_user&id=<?php echo $user['id']; ?>" class="btn btn-outline"
+                            <a href="<?= BASE_URL ?>/?action=delete_user&id=<?php echo $user['id']; ?>" class="btn btn-outline"
                                 style="color: #ef4444; border-color: #ef4444; padding: 0.25rem 0.5rem; font-size: 0.8rem;"
                                 onclick="return confirm('Are you sure you want to delete this user?');">Delete</a>
                         <?php endif; ?>

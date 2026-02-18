@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../helpers.php';
 require_once __DIR__ . '/../Models/Database.php';
 
 class AdminController
@@ -7,7 +9,7 @@ class AdminController
     private function checkAdmin()
     {
         if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-            header('Location: /');
+            redirect('/');
             exit;
         }
     }
@@ -53,7 +55,7 @@ class AdminController
         // Log implementation would go here
         $this->logAction($_SESSION['user_id'], 'delete_user', "Deleted user ID: $id");
 
-        header('Location: /?page=admin_users');
+        redirect('/?page=admin_users');
         exit;
     }
 
@@ -93,7 +95,7 @@ class AdminController
         $stmt->execute([$data['name'], $data['email'], $hashedPassword, $data['role']]);
 
         $this->logAction($_SESSION['user_id'], 'create_user', "Created user: {$data['email']}");
-        header('Location: /?page=admin_users');
+        redirect('/?page=admin_users');
         exit;
     }
 
@@ -124,7 +126,7 @@ class AdminController
         $stmt->execute($params);
 
         $this->logAction($_SESSION['user_id'], 'update_user', "Updated user ID: $id");
-        header('Location: /?page=admin_users');
+        redirect('/?page=admin_users');
         exit;
     }
 }

@@ -10,14 +10,14 @@ $currentDate = date('Y-m-d');
     </p>
     <?php if (isset($_SESSION['role']) && ($_SESSION['role'] === 'hr' || $_SESSION['role'] === 'admin')): ?>
         <div style="margin-top: 1.5rem;">
-            <a href="/?page=job_create" class="btn btn-primary">Post New Job</a>
+            <a href="<?= BASE_URL ?>/?page=job_create" class="btn btn-primary">Post New Job</a>
         </div>
     <?php endif; ?>
 </div>
 
 <!-- Search Filter -->
 <div class="glass-panel mb-8" style="padding: 1.5rem;">
-    <form action="/" method="GET" class="flex gap-4" style="flex-wrap: wrap; align-items: center;">
+    <form action="<?= BASE_URL ?>/" method="GET" class="flex gap-4" style="flex-wrap: wrap; align-items: center;">
         <input type="hidden" name="page" value="jobs">
         <div style="flex: 2; min-width: 200px;">
             <input type="text" name="q" placeholder="Search by Job Title or Keywords..." class="form-control"
@@ -46,14 +46,14 @@ $currentDate = date('Y-m-d');
         <button type="submit" class="btn btn-primary"
             style="height: 42px; display: flex; align-items: center;">Search</button>
         <?php if (!empty($_GET['q']) || !empty($_GET['location']) || !empty($_GET['status'])): ?>
-            <a href="/" class="btn btn-outline" style="height: 42px; display: flex; align-items: center;">Clear</a>
+            <a href="<?= BASE_URL ?>/" class="btn btn-outline" style="height: 42px; display: flex; align-items: center;">Clear</a>
         <?php endif; ?>
     </form>
 </div>
 
 <?php if (empty($jobs)): ?>
     <div class="glass-panel text-center" style="padding: 4rem;">
-        <p class="text-muted">No job openings found matching your criteria.</p>
+        <p class="text-muted">No Available vacancies.</p>
     </div>
 <?php else: ?>
     <div class="job-grid">
@@ -124,7 +124,7 @@ $currentDate = date('Y-m-d');
                 <div
                     style="background: #f8fafc; padding: 1rem; border-top: 1px solid #e2e8f0; display: flex; gap: 0.5rem; align-items: center; justify-content: space-between;">
                     <!-- Public View -->
-                    <a href="/?page=job_detail&id=<?php echo $job['id']; ?>"
+                    <a href="<?= BASE_URL ?>/?page=job_detail&id=<?php echo $job['id']; ?>"
                         style="color: #00AAE6; font-weight: 500; text-decoration: none; font-size: 0.95rem;">
                         View Details &rarr;
                     </a>
@@ -134,7 +134,7 @@ $currentDate = date('Y-m-d');
                         <div style="display: flex; gap: 0.5rem;">
                             <!-- Actions Dropdown or Row? Let's do a simple row of icons to save space but make them clean -->
 
-                            <a href="/?page=job_edit&id=<?php echo $job['id']; ?>" title="Edit"
+                            <a href="<?= BASE_URL ?>/?page=job_edit&id=<?php echo $job['id']; ?>" title="Edit"
                                 style="color: #64748b; padding: 0.25rem; border-radius: 0.25rem; hover:bg-slate-200;">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -144,7 +144,7 @@ $currentDate = date('Y-m-d');
                             </a>
 
                             <!-- Publish/Unpublish -->
-                            <a href="/?action=toggle_job_status&id=<?php echo $job['id']; ?>"
+                            <a href="<?= BASE_URL ?>/?action=toggle_job_status&id=<?php echo $job['id']; ?>"
                                 title="<?php echo $job['status'] === 'open' ? 'Unpublish' : 'Publish'; ?>"
                                 style="color: <?php echo $job['status'] === 'open' ? '#f59e0b' : '#22c55e'; ?>; padding: 0.25rem;">
                                 <?php if ($job['status'] === 'open'): ?>
@@ -165,7 +165,7 @@ $currentDate = date('Y-m-d');
                             </a>
 
                             <!-- Duplicate -->
-                            <a href="/?action=duplicate_job&id=<?php echo $job['id']; ?>" title="Duplicate"
+                            <a href="<?= BASE_URL ?>/?action=duplicate_job&id=<?php echo $job['id']; ?>" title="Duplicate"
                                 style="color: #64748b; padding: 0.25rem;">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -175,7 +175,7 @@ $currentDate = date('Y-m-d');
                             </a>
 
                             <!-- Archive -->
-                            <a href="/?action=archive_job&id=<?php echo $job['id']; ?>" title="Archive"
+                            <a href="<?= BASE_URL ?>/?action=archive_job&id=<?php echo $job['id']; ?>" title="Archive"
                                 style="color: #64748b; padding: 0.25rem;" onclick="return confirm('Archive this job?');">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -186,7 +186,7 @@ $currentDate = date('Y-m-d');
                             </a>
 
                             <!-- Delete -->
-                            <a href="/?action=delete_job&id=<?php echo $job['id']; ?>" title="Delete"
+                            <a href="<?= BASE_URL ?>/?action=delete_job&id=<?php echo $job['id']; ?>" title="Delete"
                                 style="color: #ef4444; padding: 0.25rem;" onclick="return confirm('Permanently delete this job?');">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

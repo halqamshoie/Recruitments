@@ -33,9 +33,9 @@
     <div class="glass-panel">
         <h3>Quick Actions</h3>
         <div class="flex flex-col gap-4" style="display: flex; flex-direction: column; gap: 1rem;">
-            <a href="/?page=admin_users" class="btn btn-outline" style="text-align: left;">Manage Users &rarr;</a>
-            <a href="/?page=admin_logs" class="btn btn-outline" style="text-align: left;">View Audit Logs &rarr;</a>
-            <a href="/?page=jobs" class="btn btn-outline" style="text-align: left;">Manage Jobs (Public View) &rarr;</a>
+            <a href="<?= BASE_URL ?>/?page=admin_users" class="btn btn-outline" style="text-align: left;">Manage Users &rarr;</a>
+            <a href="<?= BASE_URL ?>/?page=admin_logs" class="btn btn-outline" style="text-align: left;">View Audit Logs &rarr;</a>
+            <a href="<?= BASE_URL ?>/?page=jobs" class="btn btn-outline" style="text-align: left;">Manage Jobs (Public View) &rarr;</a>
         </div>
     </div>
 
@@ -61,7 +61,7 @@
             <?php endforeach; ?>
         </ul>
         <div class="mt-4" style="margin-top: 1rem; text-align: center;">
-            <a href="/?page=admin_logs" class="text-sm">View All Logs</a>
+            <a href="<?= BASE_URL ?>/?page=admin_logs" class="text-sm">View All Logs</a>
         </div>
     </div>
 </div>

@@ -7,7 +7,7 @@
         </div>
     <?php endif; ?>
 
-    <form method="POST" action="/?page=register">
+    <form method="POST" action="<?= BASE_URL ?>/?page=register">
         <div class="form-group">
             <label>Full Name</label>
             <input type="text" name="name" required placeholder="John Doe">
@@ -60,7 +60,7 @@
         <button type="submit" class="btn btn-primary" style="width: 100%;">Register</button>
 
         <div class="text-center" style="margin-top: 1rem;">
-            <p class="text-sm text-muted">Already have an account? <a href="/?page=login">Login</a></p>
+            <p class="text-sm text-muted">Already have an account? <a href="<?= BASE_URL ?>/?page=login">Login</a></p>
         </div>
     </form>
 </div>

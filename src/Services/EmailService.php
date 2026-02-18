@@ -3,6 +3,7 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 require __DIR__ . '/../../vendor/autoload.php';
+require_once __DIR__ . '/../config.php';
 
 class EmailService
 {
@@ -107,7 +108,7 @@ class EmailService
 
     public function sendPasswordResetEmail($toEmail, $token)
     {
-        $resetLink = "http://localhost:8000/?page=reset_password&token=" . $token;
+        $resetLink = APP_URL . "/?page=reset_password&token=" . $token;
         try {
             $this->mail->clearAddresses();
             $this->mail->addAddress($toEmail);

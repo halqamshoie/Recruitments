@@ -2,6 +2,8 @@
 session_start();
 
 // Autoload Controllers (Manual for now)
+require_once __DIR__ . '/../src/config.php';
+require_once __DIR__ . '/../src/helpers.php';
 require_once __DIR__ . '/../src/Controllers/AuthController.php';
 require_once __DIR__ . '/../src/Controllers/AdminController.php'; // Load Admin Controller
 require_once __DIR__ . '/../src/Models/Database.php';
@@ -28,7 +30,7 @@ if ($action === 'logout') {
 
 if ($action === 'update_status') {
     if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['hr', 'admin'])) {
-        header('Location: /');
+        redirect('/');
         exit;
     }
     $application_id = $_GET['id'];
@@ -67,11 +69,11 @@ if ($action === 'update_status') {
             }
         }
     }
-    header('Location: /?page=dashboard_hr');
+    redirect('/?page=dashboard_hr');
     exit;
 } elseif ($action === 'review_cv') {
     if (!isset($_SESSION['role']) || ($_SESSION['role'] !== 'hr' && $_SESSION['role'] !== 'admin')) {
-        header('Location: /');
+        redirect('/');
         exit;
     }
     $application_id = $_GET['id'];
@@ -92,13 +94,13 @@ if ($action === 'update_status') {
         }
 
         // Redirect to CV
-        header('Location: ' . $app['resume_path']);
+        header('Location: ' . url($app['resume_path']));
         exit;
     }
     die("Application not found.");
 } elseif ($action === 'download_all_cvs') {
     if (!isset($_SESSION['role']) || ($_SESSION['role'] !== 'hr' && $_SESSION['role'] !== 'admin')) {
-        header('Location: /');
+        redirect('/');
         exit;
     }
 
@@ -167,7 +169,7 @@ if ($action === 'update_status') {
 
 } elseif ($action === 'export_csv') {
     if (!isset($_SESSION['role']) || ($_SESSION['role'] !== 'hr' && $_SESSION['role'] !== 'admin')) {
-        header('Location: /');
+        redirect('/');
         exit;
     }
 
@@ -177,7 +179,7 @@ if ($action === 'update_status') {
 
     $pdo = Database::connect();
     // Fetch all applications for this job title
-    $stmt = $pdo->prepare("SELECT u.name, u.email, a.phone, a.status, a.created_at, a.resume_path 
+    $stmt = $pdo->prepare("SELECT u.name, u.email, u.title as applicant_title, u.nationality, u.place_of_work, a.phone, a.status, a.created_at, a.resume_path 
                            FROM applications a 
                            JOIN jobs j ON a.job_id = j.id 
                            JOIN users u ON a.user_id = u.id 
@@ -202,7 +204,7 @@ if ($action === 'update_status') {
     fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
     // Header Row
-    fputcsv($output, ['Applicant Name', 'Email', 'Phone', 'Status', 'Applied Date', 'CV Link']);
+    fputcsv($output, ['Applicant Name', 'Job Title (Designation)', 'Nationality', 'Place of Work', 'Email', 'Phone', 'Status', 'Applied Date', 'CV Link']);
 
     // Data Rows
     foreach ($applicants as $app) {
@@ -211,6 +213,9 @@ if ($action === 'update_status') {
 
         fputcsv($output, [
             $app['name'],
+            $app['applicant_title'] ?? '',
+            $app['nationality'] ?? '',
+            $app['place_of_work'] ?? '',
             $app['email'],
             $app['phone'],
             ucfirst($app['status']),
@@ -234,6 +239,99 @@ if ($action === 'update_status') {
 } elseif ($action === 'store_user') {
     $admin = new AdminController();
     $admin->storeUser($_POST);
+} elseif ($action === 'update_application') {
+    if (!isset($_SESSION['user_id'])) {
+        redirect('/?page=login');
+        exit;
+    }
+
+    $appId = $_GET['id'];
+    $pdo = Database::connect();
+    
+    // Verify ownership
+    $stmt = $pdo->prepare("SELECT * FROM applications WHERE id = ? AND user_id = ?");
+    $stmt->execute([$appId, $_SESSION['user_id']]);
+    $application = $stmt->fetch();
+
+    if (!$application) {
+        die("Application not found.");
+    }
+
+
+
+    // Handle Resume Update (Replace)
+    $resumePath = $application['resume_path'];
+
+
+    if (isset($_FILES['resume']) && $_FILES['resume']['error'] === UPLOAD_ERR_OK) {
+        $uploadDir = __DIR__ . '/../public/uploads/resumes/';
+        if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+        $filename = uniqid() . '_' . basename($_FILES['resume']['name']);
+        if (move_uploaded_file($_FILES['resume']['tmp_name'], $uploadDir . $filename)) {
+             $resumePath = '/uploads/resumes/' . $filename;
+        }
+    }
+
+    // Handle Qualifications Update (Append)
+    $qualFiles = json_decode($application['qualification_files'] ?? '[]', true);
+    if (isset($_FILES['qualifications'])) {
+        $uploadDir = __DIR__ . '/../public/uploads/qualifications/';
+        if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+        
+        $count = count($_FILES['qualifications']['name']);
+        for ($i = 0; $i < $count; $i++) {
+            if ($_FILES['qualifications']['error'][$i] === UPLOAD_ERR_OK) {
+                $filename = uniqid() . '_' . basename($_FILES['qualifications']['name'][$i]);
+                if (move_uploaded_file($_FILES['qualifications']['tmp_name'][$i], $uploadDir . $filename)) {
+                    $qualFiles[] = '/uploads/qualifications/' . $filename;
+                }
+            }
+        }
+    }
+
+    $stmt = $pdo->prepare("UPDATE applications SET resume_path = ?, qualification_files = ? WHERE id = ?");
+    $stmt->execute([$resumePath, json_encode($qualFiles), $appId]);
+
+    redirect('/?page=dashboard_applicant&msg=updated');
+    exit;
+} elseif ($action === 'delete_qualification') {
+    if (!isset($_SESSION['user_id'])) {
+        redirect('/?page=login');
+        exit;
+    }
+
+    $appId = $_GET['id'];
+    $fileToDelete = urldecode($_GET['file']);
+    $pdo = Database::connect();
+
+    // Verify ownership
+    $stmt = $pdo->prepare("SELECT * FROM applications WHERE id = ? AND user_id = ?");
+    $stmt->execute([$appId, $_SESSION['user_id']]);
+    $application = $stmt->fetch();
+
+    if ($application) {
+        $qualFiles = json_decode($application['qualification_files'] ?? '[]', true);
+        
+        // Find and remove the file
+        $key = array_search($fileToDelete, $qualFiles);
+        if ($key !== false) {
+            unset($qualFiles[$key]);
+            $qualFiles = array_values($qualFiles); // Re-index
+            
+            // Start Update
+            $stmt = $pdo->prepare("UPDATE applications SET qualification_files = ? WHERE id = ?");
+            $stmt->execute([json_encode($qualFiles), $appId]);
+
+            // Optional: Delete physical file if it exists
+            // Since we use unique IDs, we can delete it safely if we are sure no one else uses it (which is true here)
+            $filePath = __DIR__ . '/../public' . $fileToDelete;
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
+        }
+    }
+    redirect('/?page=dashboard_applicant&msg=file_deleted');
+    exit;
 } elseif ($action === 'update_user') {
     $admin = new AdminController();
     $admin->updateUser($_GET['id'], $_POST);
@@ -242,7 +340,7 @@ if ($action === 'update_status') {
     $admin->deleteUser($_GET['id']);
 } elseif ($action === 'update_profile') {
     if (!isset($_SESSION['user_id'])) {
-        header('Location: /?page=login');
+        redirect('/?page=login');
         exit;
     }
 
@@ -263,13 +361,22 @@ if ($action === 'update_status') {
         }
     }
 
+    // Combine phone code and number if provided separately
+    $phone = $_POST['phone'];
+    if (isset($_POST['phone_code']) && !empty($_POST['phone_code'])) {
+        $phone = $_POST['phone_code'] . ' ' . $_POST['phone'];
+    }
+
     // Prepare Update Query
-    $sql = "UPDATE users SET name = ?, title = ?, phone = ?, bio = ?";
+    $sql = "UPDATE users SET name = ?, title = ?, phone = ?, bio = ?, nationality = ?, place_of_work = ?, gender = ?";
     $params = [
         $_POST['name'],
         $_POST['title'],
-        $_POST['phone'],
-        $_POST['bio']
+        $phone,
+        $_POST['bio'],
+        $_POST['nationality'] ?? '',
+        $_POST['place_of_work'] ?? '',
+        $_POST['gender'] ?? NULL
     ];
 
     if ($avatarPath) {
@@ -287,12 +394,18 @@ if ($action === 'update_status') {
     $_SESSION['user_name'] = $_POST['name'];
 
     audit_log('update_profile', "User ID: $userId updated profile");
-    header('Location: /?page=profile&success=1');
+
+    if (isset($_GET['redirect_to']) && $_GET['redirect_to'] === 'job_detail') {
+        $jobId = $_GET['job_id'] ?? '';
+        redirect('/?page=job_detail&id=' . $jobId . '&msg=profile_updated');
+    }
+
+    redirect('/?page=profile&success=1');
     exit;
 
 } elseif ($action === 'export_analytics_report') {
     if (!isset($_SESSION['role']) || ($_SESSION['role'] !== 'hr' && $_SESSION['role'] !== 'admin')) {
-        header('Location: /');
+        redirect('/');
         exit;
     }
 
@@ -358,7 +471,7 @@ if ($action === 'update_status') {
 
 } elseif ($action === 'delete_job') {
     if (!isset($_SESSION['role']) || ($_SESSION['role'] !== 'hr' && $_SESSION['role'] !== 'admin')) {
-        header('Location: /');
+        redirect('/');
         exit;
     }
     $id = $_GET['id'];
@@ -370,12 +483,12 @@ if ($action === 'update_status') {
     $pdo->prepare("DELETE FROM jobs WHERE id = ?")->execute([$id]);
 
     audit_log('delete_job', "Deleted Job ID: $id");
-    header('Location: /?page=jobs');
+    redirect('/?page=jobs');
     exit;
 
 } elseif ($action === 'archive_job') {
     if (!isset($_SESSION['role']) || ($_SESSION['role'] !== 'hr' && $_SESSION['role'] !== 'admin')) {
-        header('Location: /');
+        redirect('/');
         exit;
     }
     $id = $_GET['id'];
@@ -383,12 +496,12 @@ if ($action === 'update_status') {
     $stmt = $pdo->prepare("UPDATE jobs SET status = 'archived' WHERE id = ?");
     $stmt->execute([$id]);
     audit_log('archive_job', "Archived Job ID: $id");
-    header('Location: /?page=jobs');
+    redirect('/?page=jobs');
     exit;
 
 } elseif ($action === 'toggle_job_status') {
     if (!isset($_SESSION['role']) || ($_SESSION['role'] !== 'hr' && $_SESSION['role'] !== 'admin')) {
-        header('Location: /');
+        redirect('/');
         exit;
     }
     $id = $_GET['id'];
@@ -403,12 +516,12 @@ if ($action === 'update_status') {
     $stmt = $pdo->prepare("UPDATE jobs SET status = ? WHERE id = ?");
     $stmt->execute([$newStatus, $id]);
     audit_log('toggle_status', "Job ID: $id status changed to $newStatus");
-    header('Location: /?page=jobs');
+    redirect('/?page=jobs');
     exit;
 
 } elseif ($action === 'duplicate_job') {
     if (!isset($_SESSION['role']) || ($_SESSION['role'] !== 'hr' && $_SESSION['role'] !== 'admin')) {
-        header('Location: /');
+        redirect('/');
         exit;
     }
     $id = $_GET['id'];
@@ -434,7 +547,7 @@ if ($action === 'update_status') {
         $newId = $pdo->lastInsertId();
         audit_log('duplicate_job', "Duplicated Job ID: $id to New ID: $newId");
     }
-    header('Location: /?page=jobs');
+    redirect('/?page=jobs');
     exit;
 }
 
@@ -465,8 +578,19 @@ if ($page === 'login') {
     require __DIR__ . '/../src/Views/auth/reset_password.php';
 } elseif ($page === 'apply') {
     if (!isset($_SESSION['user_id'])) {
-        header('Location: /?page=login');
+        redirect('/?page=login');
         exit;
+    }
+
+    // Force Profile Update
+    $pdo = Database::connect();
+    $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
+    $stmt->execute([$_SESSION['user_id']]);
+    $user = $stmt->fetch();
+
+    if (empty($user['nationality']) || empty($user['place_of_work']) || empty($user['phone']) || empty($user['title'])) {
+         redirect('/?page=profile&msg=incomplete_profile');
+         exit;
     }
     $job_id = $_GET['id'];
 
@@ -513,9 +637,23 @@ if ($page === 'login') {
         $qualificationsJson = json_encode($qualificationPaths);
 
         $pdo = Database::connect();
+        
+        // Check for duplicate application
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM applications WHERE job_id = ? AND user_id = ?");
+        $stmt->execute([$job_id, $_SESSION['user_id']]);
+        if ($stmt->fetchColumn() > 0) {
+           echo "<script>alert('You have already applied for this job.'); window.location.href='/?page=dashboard_applicant';</script>";
+           exit;
+        }
+        
+        // Fetch User Phone
+        $stmt = $pdo->prepare("SELECT phone FROM users WHERE id = ?");
+        $stmt->execute([$_SESSION['user_id']]);
+        $userPhone = $stmt->fetchColumn();
+
         // New columns: phone, qualification_files. Removed cover_letter.
         $stmt = $pdo->prepare("INSERT INTO applications (job_id, user_id, phone, resume_path, qualification_files) VALUES (?, ?, ?, ?, ?)");
-        $stmt->execute([$job_id, $_SESSION['user_id'], $_POST['phone'] ?? '', $resumePath, $qualificationsJson]);
+        $stmt->execute([$job_id, $_SESSION['user_id'], $userPhone, $resumePath, $qualificationsJson]);
 
         // Fetch Job Title and User Name for Email
         $stmt = $pdo->prepare("SELECT title FROM jobs WHERE id = ?");
@@ -531,10 +669,10 @@ if ($page === 'login') {
 
         if ($user) {
             $emailService->sendApplicationReceivedEmail($user['email'], $user['name'], $jobTitle);
+            // Redirect
+            redirect('/?page=dashboard_applicant');
+            exit;
         }
-
-        header('Location: /?page=dashboard_applicant');
-        exit;
     }
 
 } elseif ($page === 'jobs') {
@@ -547,7 +685,7 @@ if ($page === 'login') {
     $sql = "SELECT * FROM jobs";
     // If NOT HR, only show open jobs and exclude archived/drafts
     if (!$isHR) {
-        $sql .= " WHERE status = 'open'";
+        $sql .= " WHERE status = 'open' AND (opening_date IS NULL OR datetime(opening_date || ' 08:00:00') <= datetime('now', 'localtime')) AND (closing_date IS NULL OR datetime(closing_date || ' 23:59:59') >= datetime('now', 'localtime'))";
     } else {
         $sql .= " WHERE 1=1"; // Placeholder for simpler appending
     }
@@ -593,22 +731,40 @@ if ($page === 'login') {
 } elseif ($page === 'dashboard_hr') {
     // HR Check
     if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['hr', 'admin'])) {
-        header('Location: /?page=login');
+        redirect('/?page=login');
         exit;
     }
-    // Fetch Applications
+    // Fetch All Jobs for Filter
     $pdo = Database::connect();
-    $stmt = $pdo->query("SELECT a.*, j.title as job_title, u.name as applicant_name, u.email as applicant_email 
+    $jobsStmt = $pdo->query("SELECT id, title FROM jobs ORDER BY title");
+    $allJobs = $jobsStmt->fetchAll();
+
+    $filterJobId = $_GET['job_id'] ?? '';
+
+    // Fetch Applications
+    $sql = "SELECT a.*, j.title as job_title, 
+                         u.name as applicant_name, u.email as applicant_email, 
+                         u.title as applicant_title, u.nationality, u.place_of_work, u.gender
                          FROM applications a 
                          JOIN jobs j ON a.job_id = j.id 
-                         JOIN users u ON a.user_id = u.id 
-                         ORDER BY a.created_at DESC");
+                         JOIN users u ON a.user_id = u.id";
+
+    $params = [];
+    if (!empty($filterJobId)) {
+        $sql .= " WHERE a.job_id = ?";
+        $params[] = $filterJobId;
+    }
+
+    $sql .= " ORDER BY a.created_at DESC";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
     $applications = $stmt->fetchAll();
     require __DIR__ . '/../src/Views/dashboard/hr.php';
 } elseif ($page === 'analytics') {
     // HR Check
     if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['hr', 'admin'])) {
-        header('Location: /?page=login');
+        redirect('/?page=login');
         exit;
     }
 
@@ -653,7 +809,7 @@ if ($page === 'login') {
 } elseif ($page === 'dashboard_applicant') {
     // Applicant Check
     if (!isset($_SESSION['user_id'])) {
-        header('Location: /?page=login');
+        redirect('/?page=login');
         exit;
     }
     // Fetch My Applications
@@ -668,7 +824,7 @@ if ($page === 'login') {
     require __DIR__ . '/../src/Views/dashboard/applicant.php';
 } elseif ($page === 'job_create') {
     if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['hr', 'admin'])) {
-        header('Location: /');
+        redirect('/');
         exit;
     }
     // Handle Post
@@ -723,13 +879,13 @@ if ($page === 'login') {
             $_SESSION['user_id'],
             $status
         ]);
-        header('Location: /?page=jobs');
+        redirect('/?page=jobs');
         exit;
     }
     require __DIR__ . '/../src/Views/jobs/create.php';
 } elseif ($page === 'job_edit') {
     if (!isset($_SESSION['role']) || ($_SESSION['role'] !== 'hr' && $_SESSION['role'] !== 'admin')) {
-        header('Location: /');
+        redirect('/');
         exit;
     }
     $id = $_GET['id'];
@@ -786,7 +942,7 @@ if ($page === 'login') {
         ]);
 
         audit_log('edit_job', "Edited Job ID: $id (Status: $status)");
-        header('Location: /?page=job_detail&id=' . $id);
+        redirect('/?page=job_detail&id=' . $id);
         exit;
     }
 
@@ -796,7 +952,7 @@ if ($page === 'login') {
     require __DIR__ . '/../src/Views/jobs/edit.php';
 } elseif ($page === 'apply') {
     if (!isset($_SESSION['user_id'])) {
-        header('Location: /?page=login');
+        redirect('/?page=login');
         exit;
     }
     $job_id = $_GET['id'];
@@ -820,12 +976,13 @@ if ($page === 'login') {
         // New columns: phone. Removed cover_letter.
         $stmt = $pdo->prepare("INSERT INTO applications (job_id, user_id, phone, resume_path) VALUES (?, ?, ?, ?)");
         $stmt->execute([$job_id, $_SESSION['user_id'], $_POST['phone'] ?? '', $resumePath]);
-        header('Location: /?page=dashboard_applicant');
+        redirect('/?page=dashboard_applicant');
         exit;
     }
+
 } elseif ($page === 'profile') {
     if (!isset($_SESSION['user_id'])) {
-        header('Location: /?page=login');
+        redirect('/?page=login');
         exit;
     }
     $pdo = Database::connect();
@@ -857,7 +1014,7 @@ if ($page === 'login') {
     require __DIR__ . '/../src/Views/admin/logs.php';
 } elseif ($page === 'admin_settings') {
     if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-        header('Location: /?page=login');
+        redirect('/?page=login');
         exit;
     }
 

@@ -1,5 +1,6 @@
 <?php
 $title = 'My Profile';
+require_once __DIR__ . '/../../../src/Helpers/CountryHelper.php';
 ?>
 
 <div class="container" style="max-width: 800px; margin: 2rem auto;">
@@ -16,7 +17,14 @@ $title = 'My Profile';
             </div>
         <?php endif; ?>
 
-        <form action="/?action=update_profile" method="POST" enctype="multipart/form-data">
+        <?php if (isset($_GET['msg']) && $_GET['msg'] === 'incomplete_profile'): ?>
+            <div class="alert alert-warning"
+                style="margin-bottom: 2rem; padding: 1rem; border-radius: 0.5rem; background: #fffbeb; color: #92400e; border: 1px solid #fcd34d;">
+                <strong>Action Required:</strong> Please complete your profile (Nationality, Place of Work, Phone, Title) before applying for jobs.
+            </div>
+        <?php endif; ?>
+
+        <form action="<?= BASE_URL ?>/?action=update_profile" method="POST" enctype="multipart/form-data">
 
             <!-- Avatar Section -->
             <div
@@ -58,16 +66,63 @@ $title = 'My Profile';
             <div class="grid margin-bottom-2rem"
                 style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
                 <div>
+                    <label class="form-label">Nationality</label>
+                    <select name="nationality" class="form-control" style="padding: 0.85rem;" required>
+                        <option value="">Select Nationality</option>
+                        <?php foreach (CountryHelper::getCountries() as $country): ?>
+                            <option value="<?= $country ?>" <?= ($user['nationality'] ?? '') === $country ? 'selected' : '' ?>>
+                                <?= $country ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Phone Number</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <select name="phone_code" class="form-control" style="width: 140px; flex-shrink: 0; padding: 0.85rem;" required>
+                            <option value="">Code</option>
+                            <?php 
+                            // CountryHelper already required at top
+                            foreach (CountryHelper::getLinkCodes() as $code => $label): ?>
+                                <option value="<?= $code ?>" <?= (strpos($user['phone'] ?? '', $code) === 0) ? 'selected' : '' ?>>
+                                    <?= $label ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <input type="text" name="phone" class="form-control"
+                            value="<?php echo htmlspecialchars(preg_replace('/^\+\d+\s?/', '', $user['phone'] ?? '')); ?>" 
+                            placeholder="12345678" style="padding: 0.85rem;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid margin-bottom-2rem"
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                <div>
                     <label class="form-label">Job Title / Designation</label>
                     <input type="text" name="title" class="form-control"
                         value="<?php echo htmlspecialchars($user['title'] ?? ''); ?>"
                         placeholder="e.g. Senior Developer" style="padding: 0.85rem;">
                 </div>
                 <div>
-                    <label class="form-label">Phone Number</label>
-                    <input type="text" name="phone" class="form-control"
-                        value="<?php echo htmlspecialchars($user['phone'] ?? ''); ?>" placeholder="+968 1234 5678"
-                        style="padding: 0.85rem;">
+                    <label class="form-label">Place of Work</label>
+                    <input type="text" name="place_of_work" class="form-control"
+                        value="<?php echo htmlspecialchars($user['place_of_work'] ?? ''); ?>"
+                        placeholder="e.g. Ministry of Health" style="padding: 0.85rem;">
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 2rem;">
+                <label class="form-label">Gender</label>
+                <div style="display: flex; gap: 2rem; padding: 0.5rem 0;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: normal; cursor: pointer;">
+                        <input type="radio" name="gender" value="Male" <?= ($user['gender'] ?? '') === 'Male' ? 'checked' : '' ?> style="width: 20px; height: 20px;"> 
+                        <span style="font-size: 1.1rem;">Male</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: normal; cursor: pointer;">
+                        <input type="radio" name="gender" value="Female" <?= ($user['gender'] ?? '') === 'Female' ? 'checked' : '' ?> style="width: 20px; height: 20px;"> 
+                        <span style="font-size: 1.1rem;">Female</span>
+                    </label>
                 </div>
             </div>
 

@@ -8,7 +8,7 @@
         </div>
     <?php endif; ?>
 
-    <form action="/?action=update_password" method="POST">
+    <form action="<?= BASE_URL ?>/?action=update_password" method="POST">
         <input type="hidden" name="token" value="<?php echo htmlspecialchars($_GET['token'] ?? ''); ?>">
 
         <div class="mb-4">

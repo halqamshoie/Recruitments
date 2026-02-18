@@ -8,7 +8,7 @@
         </div>
     <?php endif; ?>
 
-    <form action="/?action=send_reset_link" method="POST">
+    <form action="<?= BASE_URL ?>/?action=send_reset_link" method="POST">
         <div class="mb-4">
             <label class="form-label">Email Address</label>
             <input type="email" name="email" class="form-control" required placeholder="Enter your registered email">
@@ -18,6 +18,6 @@
     </form>
 
     <div class="text-center mt-6">
-        <a href="/?page=login" class="text-sm">Back to Login</a>
+        <a href="<?= BASE_URL ?>/?page=login" class="text-sm">Back to Login</a>
     </div>
 </div>

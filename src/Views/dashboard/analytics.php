@@ -2,7 +2,7 @@
     <h1>Recruitment Analytics</h1>
     <div class="flex gap-2">
         <!-- Export CSV Button -->
-        <a href="/?action=export_analytics_report" class="btn btn-outline"
+        <a href="<?= BASE_URL ?>/?action=export_analytics_report" class="btn btn-outline"
             style="display: flex; align-items: center; gap: 0.5rem; color: #166534; border-color: #166534;">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

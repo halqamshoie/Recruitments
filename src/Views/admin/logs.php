@@ -1,6 +1,6 @@
 <div class="mb-8 flex justify-between items-center">
     <h1>Audit Logs</h1>
-    <a href="/?page=admin_dashboard" class="btn btn-outline">&larr; Dashboard</a>
+    <a href="<?= BASE_URL ?>/?page=admin_dashboard" class="btn btn-outline">&larr; Dashboard</a>
 </div>
 
 <div class="glass-panel">
