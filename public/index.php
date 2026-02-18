@@ -249,12 +249,26 @@ if ($action === 'update_status') {
     $pdo = Database::connect();
     
     // Verify ownership
-    $stmt = $pdo->prepare("SELECT * FROM applications WHERE id = ? AND user_id = ?");
+    // Verify ownership & Fetch Job Dates
+    $stmt = $pdo->prepare("SELECT a.*, j.opening_date, j.closing_date 
+                           FROM applications a 
+                           JOIN jobs j ON a.job_id = j.id
+                           WHERE a.id = ? AND a.user_id = ?");
     $stmt->execute([$appId, $_SESSION['user_id']]);
     $application = $stmt->fetch();
 
     if (!$application) {
         die("Application not found.");
+    }
+
+    // Date Restriction Check
+    $now = new DateTime();
+    $opening = !empty($application['opening_date']) ? new DateTime($application['opening_date'] . ' 08:00:00') : null;
+    $closing = !empty($application['closing_date']) ? new DateTime($application['closing_date'] . ' 23:59:59') : null;
+
+    if (($opening && $now < $opening) || ($closing && $now > $closing)) {
+        redirect('/?page=dashboard_applicant&msg=expired');
+        exit;
     }
 
 
@@ -305,11 +319,25 @@ if ($action === 'update_status') {
     $pdo = Database::connect();
 
     // Verify ownership
-    $stmt = $pdo->prepare("SELECT * FROM applications WHERE id = ? AND user_id = ?");
+    // Verify ownership & Fetch Job Dates
+    $stmt = $pdo->prepare("SELECT a.*, j.opening_date, j.closing_date 
+                           FROM applications a 
+                           JOIN jobs j ON a.job_id = j.id
+                           WHERE a.id = ? AND a.user_id = ?");
     $stmt->execute([$appId, $_SESSION['user_id']]);
     $application = $stmt->fetch();
 
+    // Date Restriction Check
     if ($application) {
+        $now = new DateTime();
+        $opening = !empty($application['opening_date']) ? new DateTime($application['opening_date'] . ' 08:00:00') : null;
+        $closing = !empty($application['closing_date']) ? new DateTime($application['closing_date'] . ' 23:59:59') : null;
+
+        if (($opening && $now < $opening) || ($closing && $now > $closing)) {
+            redirect('/?page=dashboard_applicant&msg=expired');
+            exit;
+        }
+
         $qualFiles = json_decode($application['qualification_files'] ?? '[]', true);
         
         // Find and remove the file
@@ -814,7 +842,7 @@ if ($page === 'login') {
     }
     // Fetch My Applications
     $pdo = Database::connect();
-    $stmt = $pdo->prepare("SELECT a.*, j.title as job_title 
+    $stmt = $pdo->prepare("SELECT a.*, j.title as job_title, j.opening_date, j.closing_date 
                            FROM applications a 
                            JOIN jobs j ON a.job_id = j.id 
                            WHERE a.user_id = ? 

@@ -12,7 +12,12 @@ $dirName = dirname($scriptName);     // e.g., /recruitments or /
 
 // Ensure trailing slash for BASE_URL if it's not root
 if ($dirName === '/' || $dirName === '\\') {
-    define('BASE_URL', '');
+    // Fallback: If running under /recruitments alias but script thinks it's root
+    if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], '/recruitments') === 0) {
+        define('BASE_URL', '/recruitments');
+    } else {
+        define('BASE_URL', '');
+    }
 } else {
     define('BASE_URL', rtrim($dirName, '/\\'));
 }

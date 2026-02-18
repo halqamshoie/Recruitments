@@ -2,12 +2,37 @@
 
 <div class="glass-panel" style="padding: 2rem;">
     <h3 class="mb-4" style="color: #00AAE6;">My Applications</h3>
+    
+    <?php if (isset($_GET['msg'])): ?>
+        <div style="padding: 1rem; margin-bottom: 1.5rem; border-radius: 0.5rem; 
+            background: <?php echo $_GET['msg'] === 'error' ? '#fee2e2' : '#dcfce7'; ?>; 
+            color: <?php echo $_GET['msg'] === 'error' ? '#991b1b' : '#166534'; ?>; 
+            border: 1px solid <?php echo $_GET['msg'] === 'error' ? '#f87171' : '#86efac'; ?>;">
+            <?php 
+            if ($_GET['msg'] === 'updated') echo "Application files updated successfully.";
+            elseif ($_GET['msg'] === 'file_deleted') echo "File deleted successfully.";
+            elseif ($_GET['msg'] === 'expired') echo "Cannot update application: Job application window has closed.";
+            ?>
+        </div>
+    <?php endif; ?>
+
     <?php if (empty($my_applications)): ?>
         <p class="text-muted">You haven't applied to any jobs yet. <a href="<?= BASE_URL ?>/">Browse Jobs</a></p>
     <?php else: ?>
         <div class="job-grid"
             style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
             <?php foreach ($my_applications as $app): ?>
+                <?php 
+                    // Check if job is still open
+                    $now = new DateTime();
+                    $opening = !empty($app['opening_date']) ? new DateTime($app['opening_date'] . ' 08:00:00') : null;
+                    $closing = !empty($app['closing_date']) ? new DateTime($app['closing_date'] . ' 23:59:59') : null;
+                    
+                    $isOpen = true;
+                    if ($opening && $now < $opening) $isOpen = false;
+                    if ($closing && $now > $closing) $isOpen = false;
+                ?>
+
                 <div class="job-card"
                     style="background: white; padding: 1.5rem; border-radius: 1rem; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); height: auto; display: block;">
                     <div style="margin-bottom: 1rem;">
@@ -31,10 +56,12 @@
                             <?php echo ucfirst($app['status']); ?>
                         </span>
                         
+                        <?php if ($isOpen): ?>
                         <button onclick="document.getElementById('update-app-<?= $app['id'] ?>').style.display = document.getElementById('update-app-<?= $app['id'] ?>').style.display === 'none' ? 'block' : 'none'" 
                             class="btn btn-outline" style="font-size: 0.85rem; padding: 0.25rem 0.75rem;">
                             Update Files
                         </button>
+                        <?php endif; ?>
                     </div>
 
                     <!-- Update Form (Hidden) -->
