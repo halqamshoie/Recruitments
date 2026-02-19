@@ -87,11 +87,13 @@ if ($action === 'update_status') {
 
     if ($app) {
         // Auto-update status to 'reviewed' if it is currently pending
+        /* Auto-update disabled
         if ($app['status'] === 'pending') {
             $stmt = $pdo->prepare("UPDATE applications SET status = 'reviewed' WHERE id = ?");
             $stmt->execute([$application_id]);
             audit_log('review_cv', "Auto-updated App ID: $application_id to reviewed");
         }
+        */
 
         // Redirect to CV
         header('Location: ' . url($app['resume_path']));
