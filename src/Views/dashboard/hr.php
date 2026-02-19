@@ -109,7 +109,7 @@ foreach ($applications as $app) {
                             <th style="padding: 1rem;">Applicant</th>
                             <th style="padding: 1rem;">Gender</th>
                             <th style="padding: 1rem;">Nationality</th>
-                            <th style="padding: 1rem;">Place of Work</th>
+                            <th style="padding: 1rem;">Current Place of Work</th>
                             <th style="padding: 1rem;">Contact</th>
                             <th style="padding: 1rem;">CV</th>
                             <th style="padding: 1rem;">Qualifications</th>

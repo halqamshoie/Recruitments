@@ -105,7 +105,7 @@ require_once __DIR__ . '/../../../src/Helpers/CountryHelper.php';
                         placeholder="e.g. Senior Developer" style="padding: 0.85rem;" required>
                 </div>
                 <div>
-                    <label class="form-label">Place of Work</label>
+                    <label class="form-label">Current Place of Work</label>
                     <input type="text" name="place_of_work" class="form-control"
                         value="<?php echo htmlspecialchars($user['place_of_work'] ?? ''); ?>"
                         placeholder="e.g. Ministry of Health" style="padding: 0.85rem;" required>
