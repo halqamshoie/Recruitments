@@ -35,6 +35,7 @@
         <div class="flex flex-col gap-4" style="display: flex; flex-direction: column; gap: 1rem;">
             <a href="<?= BASE_URL ?>/?page=admin_users" class="btn btn-outline" style="text-align: left;">Manage Users &rarr;</a>
             <a href="<?= BASE_URL ?>/?page=admin_logs" class="btn btn-outline" style="text-align: left;">View Audit Logs &rarr;</a>
+            <a href="<?= BASE_URL ?>/?page=admin_settings" class="btn btn-outline" style="text-align: left;">System Settings &rarr;</a>
             <a href="<?= BASE_URL ?>/?page=jobs" class="btn btn-outline" style="text-align: left;">Manage Jobs (Public View) &rarr;</a>
         </div>
     </div>
