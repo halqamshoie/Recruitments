@@ -73,7 +73,11 @@
                             <?php endif; ?>
                             <?php foreach (json_decode($app['qualification_files'] ?? '[]') as $k => $f): ?>
                                 <li style="margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.5rem;">
-                                    📎 <a href="<?= BASE_URL . htmlspecialchars($f) ?>" target="_blank">Doc <?= $k+1 ?></a>
+                                    <?php 
+                                        $parts = explode('_', basename($f), 2);
+                                        $displayName = isset($parts[1]) ? $parts[1] : basename($f);
+                                    ?>
+                                    📎 <a href="<?= BASE_URL . htmlspecialchars($f) ?>" target="_blank"><?= htmlspecialchars($displayName) ?></a>
                                     <a href="<?= BASE_URL ?>/?action=delete_qualification&id=<?= $app['id'] ?>&file=<?= urlencode($f) ?>" 
                                        onclick="return confirm('Are you sure you want to delete this file?')"
                                        style="color: red; text-decoration: none; font-size: 0.8rem;" title="Delete">
@@ -89,7 +93,7 @@
                                 <input type="file" name="resume" accept=".pdf" class="form-control" style="font-size: 0.85rem;">
                             </div>
                             <div class="form-group" style="margin-bottom: 1rem;">
-                                <label style="font-size: 0.85rem;">Add Documents (PDF/ZIP)</label>
+                                <label style="font-size: 0.85rem;">Add Qualification Documents (PDF/ZIP)</label>
                                 <input type="file" name="qualifications[]" multiple accept=".pdf,.zip" class="form-control" style="font-size: 0.85rem;">
                             </div>
                             <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 0.9rem;">Submit Updates</button>
