@@ -91,7 +91,7 @@ require_once __DIR__ . '/../../../src/Helpers/CountryHelper.php';
                         </select>
                         <input type="text" name="phone" class="form-control"
                             value="<?php echo htmlspecialchars(preg_replace('/^\+\d+\s?/', '', $user['phone'] ?? '')); ?>" 
-                            placeholder="12345678" style="padding: 0.85rem;">
+                            placeholder="12345678" style="padding: 0.85rem;" required>
                     </div>
                 </div>
             </div>
@@ -102,13 +102,13 @@ require_once __DIR__ . '/../../../src/Helpers/CountryHelper.php';
                     <label class="form-label">Job Title / Designation</label>
                     <input type="text" name="title" class="form-control"
                         value="<?php echo htmlspecialchars($user['title'] ?? ''); ?>"
-                        placeholder="e.g. Senior Developer" style="padding: 0.85rem;">
+                        placeholder="e.g. Senior Developer" style="padding: 0.85rem;" required>
                 </div>
                 <div>
                     <label class="form-label">Place of Work</label>
                     <input type="text" name="place_of_work" class="form-control"
                         value="<?php echo htmlspecialchars($user['place_of_work'] ?? ''); ?>"
-                        placeholder="e.g. Ministry of Health" style="padding: 0.85rem;">
+                        placeholder="e.g. Ministry of Health" style="padding: 0.85rem;" required>
                 </div>
             </div>
 
@@ -116,11 +116,11 @@ require_once __DIR__ . '/../../../src/Helpers/CountryHelper.php';
                 <label class="form-label">Gender</label>
                 <div style="display: flex; gap: 2rem; padding: 0.5rem 0;">
                     <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: normal; cursor: pointer;">
-                        <input type="radio" name="gender" value="Male" <?= ($user['gender'] ?? '') === 'Male' ? 'checked' : '' ?> style="width: 20px; height: 20px;"> 
+                        <input type="radio" name="gender" value="Male" <?= ($user['gender'] ?? '') === 'Male' ? 'checked' : '' ?> style="width: 20px; height: 20px;" required> 
                         <span style="font-size: 1.1rem;">Male</span>
                     </label>
                     <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: normal; cursor: pointer;">
-                        <input type="radio" name="gender" value="Female" <?= ($user['gender'] ?? '') === 'Female' ? 'checked' : '' ?> style="width: 20px; height: 20px;"> 
+                        <input type="radio" name="gender" value="Female" <?= ($user['gender'] ?? '') === 'Female' ? 'checked' : '' ?> style="width: 20px; height: 20px;" required> 
                         <span style="font-size: 1.1rem;">Female</span>
                     </label>
                 </div>

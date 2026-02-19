@@ -390,9 +390,17 @@ if ($action === 'update_status') {
     }
 
     // Combine phone code and number if provided separately
+    // Combine phone code and number if provided separately
     $phone = $_POST['phone'];
     if (isset($_POST['phone_code']) && !empty($_POST['phone_code'])) {
         $phone = $_POST['phone_code'] . ' ' . $_POST['phone'];
+    }
+
+    // Validation: Check for required fields
+    if (empty($_POST['name']) || empty($_POST['title']) || empty($phone) || 
+        empty($_POST['nationality']) || empty($_POST['place_of_work']) || empty($_POST['gender'])) {
+        redirect('/?page=profile&msg=incomplete_profile');
+        exit;
     }
 
     // Prepare Update Query
@@ -402,9 +410,9 @@ if ($action === 'update_status') {
         $_POST['title'],
         $phone,
         $_POST['bio'],
-        $_POST['nationality'] ?? '',
-        $_POST['place_of_work'] ?? '',
-        $_POST['gender'] ?? NULL
+        $_POST['nationality'],
+        $_POST['place_of_work'],
+        $_POST['gender']
     ];
 
     if ($avatarPath) {
