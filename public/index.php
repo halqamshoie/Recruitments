@@ -239,6 +239,43 @@ if ($action === 'update_status') {
 } elseif ($action === 'store_user') {
     $admin = new AdminController();
     $admin->storeUser($_POST);
+} elseif ($action === 'reset_applications') {
+    if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+        redirect('/');
+        exit;
+    }
+
+    $pdo = Database::connect();
+    
+    // 1. Truncate Applications Table
+    $pdo->exec("DELETE FROM applications");
+    $pdo->exec("DELETE FROM sqlite_sequence WHERE name='applications'"); // Reset ID counter
+    
+    // 2. Delete All Files in Upload Directories
+    $dirs = [
+        __DIR__ . '/../public/uploads/resumes/',
+        __DIR__ . '/../public/uploads/qualifications/'
+    ];
+
+    foreach ($dirs as $dir) {
+        if (is_dir($dir)) {
+            $files = glob($dir . '*'); // Get all files
+            foreach ($files as $file) {
+                if (is_file($file)) {
+                    unlink($file); // Delete file
+                }
+            }
+        }
+    }
+
+    audit_log('reset_applications', 'Deleted ALL applications and files');
+    
+    // Redirect with success parameter handled by settings page logic (need to update settings page to show generic msg if needed, 
+    // but for now we rely on the existing success handling or add a specific one)
+    // The settings page looks for $success variable. We can't pass it easily via redirect unless we add a param.
+    // Let's rely on adding a msg param.
+    redirect('/?page=admin_settings&msg=reset_success');
+    exit;
 } elseif ($action === 'update_application') {
     if (!isset($_SESSION['user_id'])) {
         redirect('/?page=login');

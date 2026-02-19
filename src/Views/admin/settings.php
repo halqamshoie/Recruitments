@@ -3,10 +3,12 @@
     <a href="<?= BASE_URL ?>/?page=admin_dashboard" class="btn btn-outline">← Back to Dashboard</a>
 </div>
 
-<?php if (!empty($success)): ?>
+<?php if (!empty($success) || (isset($_GET['msg']) && $_GET['msg'] === 'reset_success')): ?>
     <div class="glass-panel mb-4" style="background: #dcfce7; border: 1px solid #86efac; padding: 1rem 1.5rem;">
         <p style="color: #166534; margin: 0;">✅
-            <?php echo htmlspecialchars($success); ?>
+            <?php 
+                echo !empty($success) ? htmlspecialchars($success) : 'All applications and files have been successfully reset.'; 
+            ?>
         </p>
     </div>
 <?php endif; ?>
