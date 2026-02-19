@@ -235,7 +235,7 @@ if (isset($_SESSION['user_id'])) {
                                         <select name="phone_code" class="form-control" style="width: 140px; flex-shrink: 0;" required>
                                             <option value="">Code</option>
                                             <?php 
-                                            require_once __DIR__ . '/../../../src/Helpers/CountryHelper.php';
+                                            require_once __DIR__ . '/../../Helpers/CountryHelper.php';
                                             foreach (CountryHelper::getLinkCodes() as $code => $label): ?>
                                                 <option value="<?= $code ?>" <?= (strpos($userProfile['phone'] ?? '', $code) === 0) ? 'selected' : '' ?>>
                                                     <?= $label ?>
@@ -273,7 +273,7 @@ if (isset($_SESSION['user_id'])) {
                                 </div>
 
                                 <div class="form-group">
-                                    <label>Place of Work</label>
+                                    <label>Current Place of Work</label>
                                     <input type="text" name="place_of_work" class="form-control" value="<?= htmlspecialchars($userProfile['place_of_work'] ?? '') ?>" required placeholder="e.g. Ministry of ...">
                                 </div>
 
