@@ -1034,7 +1034,8 @@ if ($page === 'login') {
     require __DIR__ . '/../src/Views/admin/dashboard.php';
 } elseif ($page === 'admin_users') {
     $admin = new AdminController();
-    $users = $admin->listUsers();
+    $roleFilter = $_GET['role'] ?? null;
+    $users = $admin->listUsers($roleFilter);
     require __DIR__ . '/../src/Views/admin/users.php';
 } elseif ($page === 'admin_user_create') {
     $admin = new AdminController();

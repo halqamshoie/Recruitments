@@ -31,11 +31,24 @@ class AdminController
         return ['stats' => $stats, 'recent_logs' => $logs];
     }
 
-    public function listUsers()
+    public function listUsers($role = null)
     {
         $this->checkAdmin();
         $pdo = Database::connect();
-        return $pdo->query("SELECT * FROM users ORDER BY created_at DESC")->fetchAll();
+        
+        $sql = "SELECT * FROM users";
+        $params = [];
+        
+        if ($role && in_array($role, ['admin', 'hr', 'applicant', 'user'])) {
+            $sql .= " WHERE role = ?";
+            $params[] = $role;
+        }
+        
+        $sql .= " ORDER BY created_at DESC";
+        
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
     }
 
     public function listLogs()

@@ -1,6 +1,15 @@
 <div class="mb-8 flex justify-between items-center">
     <h1>Manage Users</h1>
     <div>
+        <form action="<?= BASE_URL ?>/" method="GET" style="display: inline-block; margin-right: 1rem;">
+            <input type="hidden" name="page" value="admin_users">
+            <select name="role" onchange="this.form.submit()" class="form-control" style="padding: 0.5rem; width: auto; display: inline-block;">
+                <option value="">All Roles</option>
+                <option value="admin" <?= ($_GET['role'] ?? '') === 'admin' ? 'selected' : '' ?>>Admin</option>
+                <option value="hr" <?= ($_GET['role'] ?? '') === 'hr' ? 'selected' : '' ?>>HR</option>
+                <option value="applicant" <?= ($_GET['role'] ?? '') === 'applicant' ? 'selected' : '' ?>>Applicant</option>
+            </select>
+        </form>
         <a href="<?= BASE_URL ?>/?page=admin_dashboard" class="btn btn-outline" style="margin-right: 0.5rem;">&larr; Dashboard</a>
         <a href="<?= BASE_URL ?>/?page=admin_user_create" class="btn btn-primary">Add New User</a>
     </div>
