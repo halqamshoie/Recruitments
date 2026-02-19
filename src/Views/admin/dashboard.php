@@ -28,7 +28,7 @@
     </div>
 </div>
 
-<div class="grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+<div class="grid-responsive">
     <!-- Quick Actions -->
     <div class="glass-panel">
         <h3>Quick Actions</h3>

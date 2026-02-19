@@ -11,7 +11,7 @@
                 value="<?php echo htmlspecialchars($job['title'] ?? ''); ?>" required>
         </div>
 
-        <div class="grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="grid-responsive" style="margin-bottom: 2rem;">
             <div class="mb-4">
                 <label class="form-label">Location</label>
                 <input type="text" name="location" class="form-control"
@@ -29,7 +29,7 @@
             </div>
         </div>
 
-        <div class="grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="grid-responsive" style="margin-bottom: 2rem;">
             <div class="mb-4">
                 <label class="form-label">Opening Date</label>
                 <input type="date" name="opening_date" class="form-control"
@@ -42,7 +42,7 @@
             </div>
         </div>
 
-        <div class="grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="grid-responsive" style="margin-bottom: 2rem;">
             <!-- <div class="mb-4">
                 <label class="form-label">Experience Required</label>
                 <input type="text" name="experience" class="form-control"

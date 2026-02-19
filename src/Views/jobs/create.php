@@ -8,7 +8,7 @@
                 <input type="text" name="title" required placeholder="e.g. Senior Medical Researcher">
             </div>
 
-            <div class="grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="grid-responsive" style="margin-bottom: 2rem;">
                 <div class="form-group">
                     <label>Location</label>
                     <input type="text" name="location" placeholder="e.g. Muscat, Oman">
@@ -19,7 +19,7 @@
             </div> -->
             </div>
 
-            <div class="grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="grid-responsive" style="margin-bottom: 2rem;">
                 <div class="form-group">
                     <label>Opening Date</label>
                     <input type="date" name="opening_date">
@@ -30,7 +30,7 @@
                 </div>
             </div>
 
-            <div class="grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="grid-responsive" style="margin-bottom: 2rem;">
                 <div class="form-group">
                     <label>Gender Preference</label>
                     <select name="gender">

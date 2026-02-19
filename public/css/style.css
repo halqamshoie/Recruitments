@@ -277,6 +277,12 @@ select:focus {
     margin-top: 1.5rem;
 }
 
+.grid-responsive {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
 /* Password Toggle */
 .password-wrapper {
     position: relative;
