@@ -144,6 +144,30 @@
     </form>
 </div>
 
+<div class="glass-panel" style="max-width: 700px; margin-top: 2rem; border: 1px solid #fee2e2;">
+    <h3 style="margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid #fee2e2; color: #991b1b;">
+        ⚠️ Danger Zone
+    </h3>
+
+    <div style="padding: 1rem; background: #fef2f2; border-radius: 0.5rem; border: 1px solid #fecaca; margin-bottom: 1.5rem;">
+        <h4 style="color: #991b1b; margin-bottom: 0.5rem;">Reset All Applications</h4>
+        <p style="color: #7f1d1d; font-size: 0.9rem; margin-bottom: 1rem;">
+            This action will <strong>permanently delete</strong> all applications, including:
+            <ul style="margin: 0.5rem 0 0.5rem 1.5rem; list-style: disc;">
+                <li>All application records in the database.</li>
+                <li>All uploaded CVs and qualification documents.</li>
+            </ul>
+            <strong style="display: block; margin-top: 0.5rem;">This action cannot be undone.</strong>
+        </p>
+        
+        <form action="<?= BASE_URL ?>/?action=reset_applications" method="POST" onsubmit="return confirm('Are you ABSOLUTELY SURE? This will delete ALL applications and files properly. There is no undo.');">
+            <button type="submit" class="btn" style="background: #dc2626; color: white; border: none; padding: 0.75rem 1.5rem; font-weight: 600;">
+                Delete All Applications
+            </button>
+        </form>
+    </div>
+</div>
+
 <script>
 function toggleNotificationOptions(checkbox) {
     const options = document.getElementById('notification-options');
