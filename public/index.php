@@ -815,7 +815,7 @@ if ($page === 'login') {
     $filterJobId = $_GET['job_id'] ?? '';
 
     // Fetch Applications
-    $sql = "SELECT a.*, j.title as job_title, 
+    $sql = "SELECT a.*, j.title as job_title, j.closing_date as job_closing_date, j.status as job_status,
                          u.name as applicant_name, u.email as applicant_email, 
                          u.title as applicant_title, u.nationality, u.place_of_work, u.gender
                          FROM applications a 

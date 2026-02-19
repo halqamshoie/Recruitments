@@ -44,6 +44,37 @@ foreach ($applications as $app) {
             <div class="flex justify-between items-center mb-4">
                 <div class="flex items-center gap-4">
                     <h3 style="margin: 0; color: #1e293b;"><?php echo htmlspecialchars($jobTitle); ?></h3>
+                    <?php 
+                        $firstApp = $apps[0] ?? [];
+                        $jobStatus = $firstApp['job_status'] ?? 'open';
+                        $jobClosingDate = $firstApp['job_closing_date'] ?? null;
+                        
+                        // Check if effectively closed due to date
+                        $isExpired = false;
+                        if ($jobClosingDate) {
+                            $closingTimestamp = strtotime($jobClosingDate . ' 23:59:59');
+                            if (time() > $closingTimestamp) {
+                                $isExpired = true;
+                            }
+                        }
+                        
+                        $displayStatus = 'Open';
+                        $statusColor = '#22c55e'; // Green
+                        $statusBg = '#dcfce7';
+
+                        if ($jobStatus === 'closed' || $isExpired) {
+                            $displayStatus = 'Closed';
+                            $statusColor = '#ef4444'; // Red
+                            $statusBg = '#fee2e2';
+                        } elseif ($jobStatus === 'draft') {
+                            $displayStatus = 'Draft';
+                            $statusColor = '#64748b'; // Gray
+                            $statusBg = '#f1f5f9';
+                        }
+                    ?>
+                    <span class="tag" style="background: <?php echo $statusBg; ?>; color: <?php echo $statusColor; ?>;">
+                        <?php echo $displayStatus; ?>
+                    </span>
                     <span class="tag" style="background: #e0f2fe; color: #0284c7;"><?php echo count($apps); ?> Applicants</span>
                 </div>
                 <div style="display: flex; gap: 0.5rem;">
