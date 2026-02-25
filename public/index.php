@@ -103,6 +103,10 @@ if ($action === 'update_status') {
     }
 
     $realFile = __DIR__ . '/../storage' . $filePath;
+    // Fallback: check public/ for legacy files uploaded before the storage move
+    if (!file_exists($realFile)) {
+        $realFile = __DIR__ . $filePath;
+    }
     if (!file_exists($realFile) || !is_file($realFile)) {
         die('File not found.');
     }
@@ -191,6 +195,7 @@ if ($action === 'update_status') {
         // Add CV
         if (!empty($app['resume_path'])) {
             $realPath = __DIR__ . '/../storage' . $app['resume_path'];
+            if (!file_exists($realPath)) $realPath = __DIR__ . $app['resume_path'];
             if (file_exists($realPath)) {
                 $extension = pathinfo($realPath, PATHINFO_EXTENSION);
                 $zip->addFile($realPath, $candidateFolder . '/CV.' . $extension);
@@ -202,6 +207,7 @@ if ($action === 'update_status') {
         if (!empty($qualFiles)) {
             foreach ($qualFiles as $idx => $filePath) {
                 $realPath = __DIR__ . '/../storage' . $filePath;
+                if (!file_exists($realPath)) $realPath = __DIR__ . $filePath;
                 if (file_exists($realPath)) {
                     $extension = pathinfo($realPath, PATHINFO_EXTENSION);
                     $zip->addFile($realPath, $candidateFolder . '/Qualification_' . ($idx + 1) . '.' . $extension);
@@ -444,6 +450,7 @@ if ($action === 'update_status') {
             // Optional: Delete physical file if it exists
             // Since we use unique IDs, we can delete it safely if we are sure no one else uses it (which is true here)
             $filePath = __DIR__ . '/../storage' . $fileToDelete;
+            if (!file_exists($filePath)) $filePath = __DIR__ . $fileToDelete;
             if (file_exists($filePath)) {
                 unlink($filePath);
             }
