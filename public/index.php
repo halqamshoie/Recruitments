@@ -1,6 +1,10 @@
 <?php
 session_start();
 
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 // Autoload Controllers (Manual for now)
 require_once __DIR__ . '/../src/config.php';
 require_once __DIR__ . '/../src/helpers.php';
@@ -15,9 +19,13 @@ $action = $_GET['action'] ?? null;
 // Audit Helper
 function audit_log($action, $details = null)
 {
-    if (isset($_SESSION['user_id'])) {
-        $admin = new AdminController(); // Reusing the helper method
-        $admin->logAction($_SESSION['user_id'], $action, $details);
+    try {
+        if (isset($_SESSION['user_id'])) {
+            $admin = new AdminController();
+            $admin->logAction($_SESSION['user_id'], $action, $details);
+        }
+    } catch (Exception $e) {
+        // Silently fail - don't crash the app if audit_logs table is missing
     }
 }
 
