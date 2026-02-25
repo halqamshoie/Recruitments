@@ -71,6 +71,57 @@ if ($action === 'update_status') {
     }
     redirect('/?page=dashboard_hr');
     exit;
+} elseif ($action === 'serve_file') {
+    // Secure file serving - requires authentication
+    if (!isset($_SESSION['user_id'])) {
+        redirect('/?page=login');
+        exit;
+    }
+
+    $filePath = $_GET['path'] ?? '';
+    if (empty($filePath)) {
+        die('File not specified.');
+    }
+
+    // Sanitize: only allow files from uploads/resumes/ and uploads/qualifications/
+    $filePath = '/' . ltrim($filePath, '/');
+    if (strpos($filePath, '/uploads/resumes/') !== 0 && strpos($filePath, '/uploads/qualifications/') !== 0) {
+        die('Access denied.');
+    }
+
+    // Prevent directory traversal
+    if (strpos($filePath, '..') !== false) {
+        die('Access denied.');
+    }
+
+    $realFile = __DIR__ . $filePath;
+    if (!file_exists($realFile) || !is_file($realFile)) {
+        die('File not found.');
+    }
+
+    // Authorization: file owner or HR/admin
+    $isHRAdmin = isset($_SESSION['role']) && in_array($_SESSION['role'], ['hr', 'admin']);
+    if (!$isHRAdmin) {
+        // Check if file belongs to the logged-in user
+        $pdo = Database::connect();
+        $stmt = $pdo->prepare(
+            "SELECT COUNT(*) FROM applications WHERE user_id = ? AND (resume_path = ? OR qualification_files LIKE ?)"
+        );
+        $stmt->execute([$_SESSION['user_id'], $filePath, '%' . $filePath . '%']);
+        if ($stmt->fetchColumn() == 0) {
+            die('Access denied.');
+        }
+    }
+
+    // Stream the file
+    $mime = mime_content_type($realFile) ?: 'application/octet-stream';
+    $filename = basename($realFile);
+    header('Content-Type: ' . $mime);
+    header('Content-Disposition: inline; filename="' . $filename . '"');
+    header('Content-Length: ' . filesize($realFile));
+    readfile($realFile);
+    exit;
+
 } elseif ($action === 'review_cv') {
     if (!isset($_SESSION['role']) || ($_SESSION['role'] !== 'hr' && $_SESSION['role'] !== 'admin')) {
         redirect('/');
@@ -86,17 +137,8 @@ if ($action === 'update_status') {
     $app = $stmt->fetch();
 
     if ($app) {
-        // Auto-update status to 'reviewed' if it is currently pending
-        /* Auto-update disabled
-        if ($app['status'] === 'pending') {
-            $stmt = $pdo->prepare("UPDATE applications SET status = 'reviewed' WHERE id = ?");
-            $stmt->execute([$application_id]);
-            audit_log('review_cv', "Auto-updated App ID: $application_id to reviewed");
-        }
-        */
-
-        // Redirect to CV
-        header('Location: ' . url($app['resume_path']));
+        // Redirect to secure file endpoint
+        redirect('/?action=serve_file&path=' . urlencode($app['resume_path']));
         exit;
     }
     die("Application not found.");
