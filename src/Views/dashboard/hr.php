@@ -138,7 +138,7 @@ foreach ($applications as $app) {
                                             <a href="<?= BASE_URL ?>/?action=review_cv&id=<?php echo $app['id']; ?>" target="_blank"
                                                 class="btn btn-outline" onclick="setTimeout(() => window.location.reload(), 500)"
                                                 style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-radius: 0.25rem;">Review</a>
-                                            <a href="<?= BASE_URL ?>/?action=serve_file&path=<?= urlencode($app['resume_path']); ?>" download class="btn btn-outline"
+                                            <a href="<?= BASE_URL ?>/?action=serve_file&file=<?= urlencode($app['resume_path']) ?>&download=1" download class="btn btn-outline"
                                                 title="Download"
                                                 style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-radius: 0.25rem;">
                                                 ⬇
@@ -154,7 +154,7 @@ foreach ($applications as $app) {
                                     if (!empty($qualFiles)): ?>
                                         <div style="display: flex; flex-direction: column; gap: 0.35rem;">
                                             <?php foreach ($qualFiles as $idx => $filePath): ?>
-                                                <a href="<?= BASE_URL ?>/?action=serve_file&path=<?= urlencode($filePath); ?>" download class="btn btn-outline"
+                                                <a href="<?= BASE_URL ?>/?action=serve_file&file=<?= urlencode($filePath) ?>&download=1" download class="btn btn-outline"
                                                     style="padding: 0.2rem 0.5rem; font-size: 0.75rem; border-radius: 0.25rem; display: inline-flex; align-items: center; gap: 0.3rem;">
                                                     📄 File <?php echo $idx + 1; ?>
                                                 </a>

@@ -1,10 +1,6 @@
 <?php
 session_start();
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 // Autoload Controllers (Manual for now)
 require_once __DIR__ . '/../src/config.php';
 require_once __DIR__ . '/../src/helpers.php';
@@ -19,13 +15,9 @@ $action = $_GET['action'] ?? null;
 // Audit Helper
 function audit_log($action, $details = null)
 {
-    try {
-        if (isset($_SESSION['user_id'])) {
-            $admin = new AdminController();
-            $admin->logAction($_SESSION['user_id'], $action, $details);
-        }
-    } catch (Exception $e) {
-        // Silently fail - don't crash the app if audit_logs table is missing
+    if (isset($_SESSION['user_id'])) {
+        $admin = new AdminController(); // Reusing the helper method
+        $admin->logAction($_SESSION['user_id'], $action, $details);
     }
 }
 
@@ -36,7 +28,54 @@ if ($action === 'logout') {
     $auth->logout();
 }
 
-if ($action === 'update_status') {
+// Secure File Proxy - serves uploaded files only to authenticated users
+if ($action === 'serve_file') {
+    if (!isset($_SESSION['user_id'])) {
+        http_response_code(403);
+        die('Access denied. Please log in.');
+    }
+
+    $filePath = $_GET['file'] ?? '';
+
+    // Security: Only allow files from /uploads/ directory
+    if (strpos($filePath, '/uploads/') !== 0) {
+        http_response_code(403);
+        die('Invalid file path.');
+    }
+
+    // Security: Prevent directory traversal
+    if (strpos($filePath, '..') !== false) {
+        http_response_code(403);
+        die('Invalid file path.');
+    }
+
+    $realFile = __DIR__ . $filePath;
+
+    if (!file_exists($realFile) || !is_file($realFile)) {
+        http_response_code(404);
+        die('File not found.');
+    }
+
+    // Determine MIME type
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mimeType = finfo_file($finfo, $realFile);
+    finfo_close($finfo);
+
+    // Stream the file
+    header('Content-Type: ' . $mimeType);
+    header('Content-Length: ' . filesize($realFile));
+
+    // For download parameter, force download
+    if (isset($_GET['download'])) {
+        header('Content-Disposition: attachment; filename="' . basename($realFile) . '"');
+    } else {
+        header('Content-Disposition: inline; filename="' . basename($realFile) . '"');
+    }
+
+    readfile($realFile);
+    exit;
+
+} elseif ($action === 'update_status') {
     if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['hr', 'admin'])) {
         redirect('/');
         exit;
@@ -79,61 +118,6 @@ if ($action === 'update_status') {
     }
     redirect('/?page=dashboard_hr');
     exit;
-} elseif ($action === 'serve_file') {
-    // Secure file serving - requires authentication
-    if (!isset($_SESSION['user_id'])) {
-        redirect('/?page=login');
-        exit;
-    }
-
-    $filePath = $_GET['path'] ?? '';
-    if (empty($filePath)) {
-        die('File not specified.');
-    }
-
-    // Sanitize: only allow files from uploads/resumes/ and uploads/qualifications/
-    $filePath = '/' . ltrim($filePath, '/');
-    if (strpos($filePath, '/uploads/resumes/') !== 0 && strpos($filePath, '/uploads/qualifications/') !== 0) {
-        die('Access denied.');
-    }
-
-    // Prevent directory traversal
-    if (strpos($filePath, '..') !== false) {
-        die('Access denied.');
-    }
-
-    $realFile = __DIR__ . '/../storage' . $filePath;
-    // Fallback: check public/ for legacy files uploaded before the storage move
-    if (!file_exists($realFile)) {
-        $realFile = __DIR__ . $filePath;
-    }
-    if (!file_exists($realFile) || !is_file($realFile)) {
-        die('File not found.');
-    }
-
-    // Authorization: file owner or HR/admin
-    $isHRAdmin = isset($_SESSION['role']) && in_array($_SESSION['role'], ['hr', 'admin']);
-    if (!$isHRAdmin) {
-        // Check if file belongs to the logged-in user
-        $pdo = Database::connect();
-        $stmt = $pdo->prepare(
-            "SELECT COUNT(*) FROM applications WHERE user_id = ? AND (resume_path = ? OR qualification_files LIKE ?)"
-        );
-        $stmt->execute([$_SESSION['user_id'], $filePath, '%' . $filePath . '%']);
-        if ($stmt->fetchColumn() == 0) {
-            die('Access denied.');
-        }
-    }
-
-    // Stream the file
-    $mime = mime_content_type($realFile) ?: 'application/octet-stream';
-    $filename = basename($realFile);
-    header('Content-Type: ' . $mime);
-    header('Content-Disposition: inline; filename="' . $filename . '"');
-    header('Content-Length: ' . filesize($realFile));
-    readfile($realFile);
-    exit;
-
 } elseif ($action === 'review_cv') {
     if (!isset($_SESSION['role']) || ($_SESSION['role'] !== 'hr' && $_SESSION['role'] !== 'admin')) {
         redirect('/');
@@ -149,8 +133,17 @@ if ($action === 'update_status') {
     $app = $stmt->fetch();
 
     if ($app) {
-        // Redirect to secure file endpoint
-        redirect('/?action=serve_file&path=' . urlencode($app['resume_path']));
+        // Auto-update status to 'reviewed' if it is currently pending
+        /* Auto-update disabled
+        if ($app['status'] === 'pending') {
+            $stmt = $pdo->prepare("UPDATE applications SET status = 'reviewed' WHERE id = ?");
+            $stmt->execute([$application_id]);
+            audit_log('review_cv', "Auto-updated App ID: $application_id to reviewed");
+        }
+        */
+
+        // Redirect to CV via secure proxy
+        header('Location: ' . url('/?action=serve_file&file=' . urlencode($app['resume_path'])));
         exit;
     }
     die("Application not found.");
@@ -194,8 +187,7 @@ if ($action === 'update_status') {
 
         // Add CV
         if (!empty($app['resume_path'])) {
-            $realPath = __DIR__ . '/../storage' . $app['resume_path'];
-            if (!file_exists($realPath)) $realPath = __DIR__ . $app['resume_path'];
+            $realPath = __DIR__ . '/../public' . $app['resume_path'];
             if (file_exists($realPath)) {
                 $extension = pathinfo($realPath, PATHINFO_EXTENSION);
                 $zip->addFile($realPath, $candidateFolder . '/CV.' . $extension);
@@ -206,8 +198,7 @@ if ($action === 'update_status') {
         $qualFiles = json_decode($app['qualification_files'] ?? '[]', true);
         if (!empty($qualFiles)) {
             foreach ($qualFiles as $idx => $filePath) {
-                $realPath = __DIR__ . '/../storage' . $filePath;
-                if (!file_exists($realPath)) $realPath = __DIR__ . $filePath;
+                $realPath = __DIR__ . '/../public' . $filePath;
                 if (file_exists($realPath)) {
                     $extension = pathinfo($realPath, PATHINFO_EXTENSION);
                     $zip->addFile($realPath, $candidateFolder . '/Qualification_' . ($idx + 1) . '.' . $extension);
@@ -311,8 +302,8 @@ if ($action === 'update_status') {
     
     // 2. Delete All Files in Upload Directories
     $dirs = [
-        __DIR__ . '/../storage/uploads/resumes/',
-        __DIR__ . '/../storage/uploads/qualifications/'
+        __DIR__ . '/../public/uploads/resumes/',
+        __DIR__ . '/../public/uploads/qualifications/'
     ];
 
     foreach ($dirs as $dir) {
@@ -373,10 +364,9 @@ if ($action === 'update_status') {
 
 
     if (isset($_FILES['resume']) && $_FILES['resume']['error'] === UPLOAD_ERR_OK) {
-        $uploadDir = __DIR__ . '/../storage/uploads/resumes/';
+        $uploadDir = __DIR__ . '/../public/uploads/resumes/';
         if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
-        $ext = pathinfo($_FILES['resume']['name'], PATHINFO_EXTENSION);
-        $filename = hash('sha256', uniqid() . random_bytes(8)) . '.' . $ext;
+        $filename = uniqid() . '_' . basename($_FILES['resume']['name']);
         if (move_uploaded_file($_FILES['resume']['tmp_name'], $uploadDir . $filename)) {
              $resumePath = '/uploads/resumes/' . $filename;
         }
@@ -385,14 +375,13 @@ if ($action === 'update_status') {
     // Handle Qualifications Update (Append)
     $qualFiles = json_decode($application['qualification_files'] ?? '[]', true);
     if (isset($_FILES['qualifications'])) {
-        $uploadDir = __DIR__ . '/../storage/uploads/qualifications/';
+        $uploadDir = __DIR__ . '/../public/uploads/qualifications/';
         if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
         
         $count = count($_FILES['qualifications']['name']);
         for ($i = 0; $i < $count; $i++) {
             if ($_FILES['qualifications']['error'][$i] === UPLOAD_ERR_OK) {
-                $ext = pathinfo($_FILES['qualifications']['name'][$i], PATHINFO_EXTENSION);
-                $filename = hash('sha256', uniqid() . random_bytes(8)) . '.' . $ext;
+                $filename = uniqid() . '_' . basename($_FILES['qualifications']['name'][$i]);
                 if (move_uploaded_file($_FILES['qualifications']['tmp_name'][$i], $uploadDir . $filename)) {
                     $qualFiles[] = '/uploads/qualifications/' . $filename;
                 }
@@ -449,8 +438,7 @@ if ($action === 'update_status') {
 
             // Optional: Delete physical file if it exists
             // Since we use unique IDs, we can delete it safely if we are sure no one else uses it (which is true here)
-            $filePath = __DIR__ . '/../storage' . $fileToDelete;
-            if (!file_exists($filePath)) $filePath = __DIR__ . $fileToDelete;
+            $filePath = __DIR__ . '/../public' . $fileToDelete;
             if (file_exists($filePath)) {
                 unlink($filePath);
             }
@@ -738,12 +726,11 @@ if ($page === 'login') {
         // Handle Resume Upload
         $resumePath = null;
         if (isset($_FILES['resume']) && $_FILES['resume']['error'] === UPLOAD_ERR_OK) {
-            $uploadDir = __DIR__ . '/../storage/uploads/resumes/';
+            $uploadDir = __DIR__ . '/../public/uploads/resumes/';
             if (!is_dir($uploadDir)) {
                 mkdir($uploadDir, 0777, true);
             }
-            $ext = pathinfo($_FILES['resume']['name'], PATHINFO_EXTENSION);
-            $filename = hash('sha256', uniqid() . random_bytes(8)) . '.' . $ext;
+            $filename = uniqid() . '_' . basename($_FILES['resume']['name']);
             $targetPath = $uploadDir . $filename;
             if (move_uploaded_file($_FILES['resume']['tmp_name'], $targetPath)) {
                 $resumePath = '/uploads/resumes/' . $filename;
@@ -753,7 +740,7 @@ if ($page === 'login') {
         // Handle Qualification Files Upload
         $qualificationPaths = [];
         if (isset($_FILES['qualifications'])) {
-            $uploadDir = __DIR__ . '/../storage/uploads/qualifications/';
+            $uploadDir = __DIR__ . '/../public/uploads/qualifications/';
             if (!is_dir($uploadDir)) {
                 mkdir($uploadDir, 0777, true);
             }
@@ -761,8 +748,7 @@ if ($page === 'login') {
             $count = count($_FILES['qualifications']['name']);
             for ($i = 0; $i < $count; $i++) {
                 if ($_FILES['qualifications']['error'][$i] === UPLOAD_ERR_OK) {
-                    $ext = pathinfo($_FILES['qualifications']['name'][$i], PATHINFO_EXTENSION);
-                    $filename = hash('sha256', uniqid() . random_bytes(8)) . '.' . $ext;
+                    $filename = uniqid() . '_' . basename($_FILES['qualifications']['name'][$i]);
                     $targetPath = $uploadDir . $filename;
                     if (move_uploaded_file($_FILES['qualifications']['tmp_name'][$i], $targetPath)) {
                         $qualificationPaths[] = '/uploads/qualifications/' . $filename;
@@ -1097,12 +1083,11 @@ if ($page === 'login') {
         // Handle File Upload
         $resumePath = null;
         if (isset($_FILES['resume']) && $_FILES['resume']['error'] === UPLOAD_ERR_OK) {
-            $uploadDir = __DIR__ . '/../storage/uploads/resumes/';
+            $uploadDir = __DIR__ . '/../public/uploads/resumes/';
             if (!is_dir($uploadDir)) {
                 mkdir($uploadDir, 0777, true);
             }
-            $ext = pathinfo($_FILES['resume']['name'], PATHINFO_EXTENSION);
-            $filename = hash('sha256', uniqid() . random_bytes(8)) . '.' . $ext;
+            $filename = uniqid() . '_' . basename($_FILES['resume']['name']);
             $targetPath = $uploadDir . $filename;
             if (move_uploaded_file($_FILES['resume']['tmp_name'], $targetPath)) {
                 $resumePath = '/uploads/resumes/' . $filename;
