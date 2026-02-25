@@ -8,12 +8,12 @@ echo "Deploying to TEST (https://cccrc.gov.om/recruitments-test/)..."
 # We assume it exists from previous setup manual steps.
 
 # Sync files
-rsync -avz --no-perms --no-owner --no-group --exclude='vendor/' --exclude='.git/' --exclude='upload_max_filesize' --exclude='.DS_Store' --exclude='public/uploads/' --exclude='storage/uploads/resumes/*' --exclude='storage/uploads/qualifications/*' ./ cccrc@172.29.2.230:/var/www/html/recruitments-test/
-
-# Ensure storage directories exist and set write permissions
-ssh cccrc@172.29.2.230 "mkdir -p /var/www/html/recruitments-test/storage/uploads/resumes /var/www/html/recruitments-test/storage/uploads/qualifications && chmod -R 777 /var/www/html/recruitments-test/storage/ && chmod 666 /var/www/html/recruitments-test/database.sqlite && chmod 777 /var/www/html/recruitments-test/"
+rsync -avz --no-perms --no-owner --no-group --exclude='vendor/' --exclude='.git/' --exclude='upload_max_filesize' --exclude='.DS_Store' --exclude='public/uploads/' ./ cccrc@172.29.2.230:/var/www/html/recruitments-test/
 
 # Ensure .htaccess is there
 scp public/.htaccess cccrc@172.29.2.230:/var/www/html/recruitments-test/public/
+
+# Fix database permissions (SQLite needs the file and its directory to be writable by the web server)
+ssh cccrc@172.29.2.230 "chmod 666 /var/www/html/recruitments-test/database.sqlite && chmod 777 /var/www/html/recruitments-test/"
 
 echo "✅ Deployed to Test Successfully!"
