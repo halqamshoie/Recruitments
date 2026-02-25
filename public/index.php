@@ -94,7 +94,7 @@ if ($action === 'update_status') {
         die('Access denied.');
     }
 
-    $realFile = __DIR__ . $filePath;
+    $realFile = __DIR__ . '/../storage' . $filePath;
     if (!file_exists($realFile) || !is_file($realFile)) {
         die('File not found.');
     }
@@ -182,7 +182,7 @@ if ($action === 'update_status') {
 
         // Add CV
         if (!empty($app['resume_path'])) {
-            $realPath = __DIR__ . '/../public' . $app['resume_path'];
+            $realPath = __DIR__ . '/../storage' . $app['resume_path'];
             if (file_exists($realPath)) {
                 $extension = pathinfo($realPath, PATHINFO_EXTENSION);
                 $zip->addFile($realPath, $candidateFolder . '/CV.' . $extension);
@@ -193,7 +193,7 @@ if ($action === 'update_status') {
         $qualFiles = json_decode($app['qualification_files'] ?? '[]', true);
         if (!empty($qualFiles)) {
             foreach ($qualFiles as $idx => $filePath) {
-                $realPath = __DIR__ . '/../public' . $filePath;
+                $realPath = __DIR__ . '/../storage' . $filePath;
                 if (file_exists($realPath)) {
                     $extension = pathinfo($realPath, PATHINFO_EXTENSION);
                     $zip->addFile($realPath, $candidateFolder . '/Qualification_' . ($idx + 1) . '.' . $extension);
@@ -297,8 +297,8 @@ if ($action === 'update_status') {
     
     // 2. Delete All Files in Upload Directories
     $dirs = [
-        __DIR__ . '/../public/uploads/resumes/',
-        __DIR__ . '/../public/uploads/qualifications/'
+        __DIR__ . '/../storage/uploads/resumes/',
+        __DIR__ . '/../storage/uploads/qualifications/'
     ];
 
     foreach ($dirs as $dir) {
@@ -359,7 +359,7 @@ if ($action === 'update_status') {
 
 
     if (isset($_FILES['resume']) && $_FILES['resume']['error'] === UPLOAD_ERR_OK) {
-        $uploadDir = __DIR__ . '/../public/uploads/resumes/';
+        $uploadDir = __DIR__ . '/../storage/uploads/resumes/';
         if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
         $filename = uniqid() . '_' . basename($_FILES['resume']['name']);
         if (move_uploaded_file($_FILES['resume']['tmp_name'], $uploadDir . $filename)) {
@@ -370,7 +370,7 @@ if ($action === 'update_status') {
     // Handle Qualifications Update (Append)
     $qualFiles = json_decode($application['qualification_files'] ?? '[]', true);
     if (isset($_FILES['qualifications'])) {
-        $uploadDir = __DIR__ . '/../public/uploads/qualifications/';
+        $uploadDir = __DIR__ . '/../storage/uploads/qualifications/';
         if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
         
         $count = count($_FILES['qualifications']['name']);
@@ -433,7 +433,7 @@ if ($action === 'update_status') {
 
             // Optional: Delete physical file if it exists
             // Since we use unique IDs, we can delete it safely if we are sure no one else uses it (which is true here)
-            $filePath = __DIR__ . '/../public' . $fileToDelete;
+            $filePath = __DIR__ . '/../storage' . $fileToDelete;
             if (file_exists($filePath)) {
                 unlink($filePath);
             }
@@ -721,7 +721,7 @@ if ($page === 'login') {
         // Handle Resume Upload
         $resumePath = null;
         if (isset($_FILES['resume']) && $_FILES['resume']['error'] === UPLOAD_ERR_OK) {
-            $uploadDir = __DIR__ . '/../public/uploads/resumes/';
+            $uploadDir = __DIR__ . '/../storage/uploads/resumes/';
             if (!is_dir($uploadDir)) {
                 mkdir($uploadDir, 0777, true);
             }
@@ -735,7 +735,7 @@ if ($page === 'login') {
         // Handle Qualification Files Upload
         $qualificationPaths = [];
         if (isset($_FILES['qualifications'])) {
-            $uploadDir = __DIR__ . '/../public/uploads/qualifications/';
+            $uploadDir = __DIR__ . '/../storage/uploads/qualifications/';
             if (!is_dir($uploadDir)) {
                 mkdir($uploadDir, 0777, true);
             }
@@ -1078,7 +1078,7 @@ if ($page === 'login') {
         // Handle File Upload
         $resumePath = null;
         if (isset($_FILES['resume']) && $_FILES['resume']['error'] === UPLOAD_ERR_OK) {
-            $uploadDir = __DIR__ . '/../public/uploads/resumes/';
+            $uploadDir = __DIR__ . '/../storage/uploads/resumes/';
             if (!is_dir($uploadDir)) {
                 mkdir($uploadDir, 0777, true);
             }

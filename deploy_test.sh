@@ -8,7 +8,10 @@ echo "Deploying to TEST (https://cccrc.gov.om/recruitments-test/)..."
 # We assume it exists from previous setup manual steps.
 
 # Sync files
-rsync -avz --no-perms --no-owner --no-group --exclude='vendor/' --exclude='.git/' --exclude='upload_max_filesize' --exclude='.DS_Store' --exclude='public/uploads/' ./ cccrc@172.29.2.230:/var/www/html/recruitments-test/
+rsync -avz --no-perms --no-owner --no-group --exclude='vendor/' --exclude='.git/' --exclude='upload_max_filesize' --exclude='.DS_Store' --exclude='public/uploads/' --exclude='storage/uploads/resumes/*' --exclude='storage/uploads/qualifications/*' ./ cccrc@172.29.2.230:/var/www/html/recruitments-test/
+
+# Ensure storage directories exist on the server
+ssh cccrc@172.29.2.230 "mkdir -p /var/www/html/recruitments-test/storage/uploads/resumes /var/www/html/recruitments-test/storage/uploads/qualifications"
 
 # Ensure .htaccess is there
 scp public/.htaccess cccrc@172.29.2.230:/var/www/html/recruitments-test/public/
