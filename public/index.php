@@ -366,7 +366,8 @@ if ($action === 'serve_file') {
     if (isset($_FILES['resume']) && $_FILES['resume']['error'] === UPLOAD_ERR_OK) {
         $uploadDir = __DIR__ . '/../public/uploads/resumes/';
         if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
-        $filename = uniqid() . '_' . basename($_FILES['resume']['name']);
+        $extension = pathinfo($_FILES['resume']['name'], PATHINFO_EXTENSION);
+        $filename = hash('sha256', uniqid('', true) . basename($_FILES['resume']['name'])) . '.' . $extension;
         if (move_uploaded_file($_FILES['resume']['tmp_name'], $uploadDir . $filename)) {
              $resumePath = '/uploads/resumes/' . $filename;
         }
@@ -381,7 +382,8 @@ if ($action === 'serve_file') {
         $count = count($_FILES['qualifications']['name']);
         for ($i = 0; $i < $count; $i++) {
             if ($_FILES['qualifications']['error'][$i] === UPLOAD_ERR_OK) {
-                $filename = uniqid() . '_' . basename($_FILES['qualifications']['name'][$i]);
+                $extension = pathinfo($_FILES['qualifications']['name'][$i], PATHINFO_EXTENSION);
+                $filename = hash('sha256', uniqid('', true) . basename($_FILES['qualifications']['name'][$i])) . '.' . $extension;
                 if (move_uploaded_file($_FILES['qualifications']['tmp_name'][$i], $uploadDir . $filename)) {
                     $qualFiles[] = '/uploads/qualifications/' . $filename;
                 }
@@ -468,7 +470,8 @@ if ($action === 'serve_file') {
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0777, true);
         }
-        $filename = uniqid() . '_' . basename($_FILES['avatar']['name']);
+        $extension = pathinfo($_FILES['avatar']['name'], PATHINFO_EXTENSION);
+        $filename = hash('sha256', uniqid('', true) . basename($_FILES['avatar']['name'])) . '.' . $extension;
         $targetPath = $uploadDir . $filename;
         if (move_uploaded_file($_FILES['avatar']['tmp_name'], $targetPath)) {
             $avatarPath = '/uploads/avatars/' . $filename;
@@ -730,7 +733,8 @@ if ($page === 'login') {
             if (!is_dir($uploadDir)) {
                 mkdir($uploadDir, 0777, true);
             }
-            $filename = uniqid() . '_' . basename($_FILES['resume']['name']);
+            $extension = pathinfo($_FILES['resume']['name'], PATHINFO_EXTENSION);
+            $filename = hash('sha256', uniqid('', true) . basename($_FILES['resume']['name'])) . '.' . $extension;
             $targetPath = $uploadDir . $filename;
             if (move_uploaded_file($_FILES['resume']['tmp_name'], $targetPath)) {
                 $resumePath = '/uploads/resumes/' . $filename;
@@ -748,7 +752,8 @@ if ($page === 'login') {
             $count = count($_FILES['qualifications']['name']);
             for ($i = 0; $i < $count; $i++) {
                 if ($_FILES['qualifications']['error'][$i] === UPLOAD_ERR_OK) {
-                    $filename = uniqid() . '_' . basename($_FILES['qualifications']['name'][$i]);
+                    $extension = pathinfo($_FILES['qualifications']['name'][$i], PATHINFO_EXTENSION);
+                    $filename = hash('sha256', uniqid('', true) . basename($_FILES['qualifications']['name'][$i])) . '.' . $extension;
                     $targetPath = $uploadDir . $filename;
                     if (move_uploaded_file($_FILES['qualifications']['tmp_name'][$i], $targetPath)) {
                         $qualificationPaths[] = '/uploads/qualifications/' . $filename;
@@ -1087,7 +1092,8 @@ if ($page === 'login') {
             if (!is_dir($uploadDir)) {
                 mkdir($uploadDir, 0777, true);
             }
-            $filename = uniqid() . '_' . basename($_FILES['resume']['name']);
+            $extension = pathinfo($_FILES['resume']['name'], PATHINFO_EXTENSION);
+            $filename = hash('sha256', uniqid('', true) . basename($_FILES['resume']['name'])) . '.' . $extension;
             $targetPath = $uploadDir . $filename;
             if (move_uploaded_file($_FILES['resume']['tmp_name'], $targetPath)) {
                 $resumePath = '/uploads/resumes/' . $filename;
